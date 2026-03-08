@@ -51,14 +51,20 @@
 
 ### Config
 
-| OpenClaw | AndroidForClaw |
-|----------|----------------|
-| `src/config/` | `app/src/main/java/com/xiaomo/androidforclaw/config/` |
-| `src/config/models-config.ts` | `config/ModelConfig.kt` |
-| `src/config/openclaw-config.ts` | `config/OpenClawConfig.kt` |
-| `src/config/config-loader.ts` | `config/ConfigLoader.kt` |
-| `~/.openclaw/config/models.json` | `/sdcard/AndroidForClaw/config/models.json` |
-| `~/.openclaw/config/openclaw.json` | `/sdcard/AndroidForClaw/config/openclaw.json` |
+| OpenClaw | AndroidForClaw | 说明 |
+|----------|----------------|------|
+| `src/config/` | `app/src/main/java/com/xiaomo/androidforclaw/config/` | 配置代码 |
+| `src/config/models-config.ts` | `config/ModelConfig.kt` | 模型配置类 |
+| `src/config/openclaw-config.ts` | - | AClaw 不使用 |
+| `src/config/config-loader.ts` | `config/ConfigLoader.kt` | 配置加载器 |
+| `~/.openclaw/config/models.json` | `/sdcard/AndroidForClaw/config/models.json` | LLM providers |
+| `~/.openclaw/config/openclaw.json` | - | AClaw 不使用此文件 |
+
+**配置差异说明**:
+- **OpenClaw**: 使用两个配置文件
+  - `models.json` - LLM providers 配置
+  - `openclaw.json` - Agent/Gateway/Skills/Tools 配置
+- **AndroidForClaw**: 仅使用 `models.json` (包含所有配置)
 
 ### Memory
 

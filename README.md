@@ -134,9 +134,11 @@
 
 ## 🛠️ Configuration
 
-### API Configuration
+**Config File**: `/sdcard/AndroidForClaw/config/models.json` (single config file)
 
-Edit `/sdcard/AndroidForClaw/config/models.json`:
+AndroidForClaw uses a single configuration file `models.json` for LLM providers, agent settings, channels, tools, and all other configurations.
+
+**Example Configuration**:
 
 ```json
 {
@@ -159,11 +161,7 @@ Edit `/sdcard/AndroidForClaw/config/models.json`:
 }
 ```
 
-### OpenClaw Configuration
-
-Edit `/sdcard/AndroidForClaw/config/openclaw.json` for agent settings, channels, and gateway configuration.
-
-See [config/openclaw.json.example](config/openclaw.json.example) for full options.
+**Note**: AndroidForClaw does not use `openclaw.json`. See [config/models.json.example](config/models.json.example) for full options.
 
 ---
 

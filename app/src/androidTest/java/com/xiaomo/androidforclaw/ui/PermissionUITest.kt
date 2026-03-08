@@ -129,10 +129,11 @@ class PermissionUITest {
     fun testPackageName_correct() {
         val context = ApplicationProvider.getApplicationContext<MyApplication>()
 
-        assertEquals(
-            "包名应该匹配",
-            "com.xiaomo.androidforclaw",
-            context.packageName
+        // Debug 版本包名会有 .debug 后缀
+        assertTrue(
+            "包名应该是基础包名或debug变体",
+            context.packageName == "com.xiaomo.androidforclaw" ||
+            context.packageName == "com.xiaomo.androidforclaw.debug"
         )
     }
 

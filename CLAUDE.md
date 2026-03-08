@@ -76,11 +76,19 @@
 
 ## ⚙️ 配置系统
 
-### 模型配置 (与 OpenClaw 对齐)
+### 配置文件说明
 
-androidforclaw 使用与 OpenClaw 相同的模型配置格式。
+**重要区别**:
+- **OpenClaw**: 使用两个配置文件
+  - `~/.openclaw/config/models.json` - LLM providers
+  - `~/.openclaw/config/openclaw.json` - Agent/Gateway/Skills/Tools
+- **AndroidForClaw**: 仅使用 `models.json` (包含所有配置)
 
 **配置文件位置**: `/sdcard/AndroidForClaw/config/models.json`
+
+### 模型配置格式
+
+AndroidForClaw 的 `models.json` 格式与 OpenClaw 的 `models.json` 相同。
 
 **配置示例**:
 ```json

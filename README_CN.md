@@ -134,9 +134,11 @@
 
 ## 🛠️ 配置说明
 
-### API 配置
+**配置文件**: `/sdcard/AndroidForClaw/config/models.json` (唯一配置文件)
 
-编辑 `/sdcard/AndroidForClaw/config/models.json`:
+AndroidForClaw 使用单一配置文件 `models.json`，包含 LLM providers、Agent 设置、渠道、工具等所有配置。
+
+**配置示例**:
 
 ```json
 {
@@ -159,11 +161,7 @@
 }
 ```
 
-### OpenClaw 配置
-
-编辑 `/sdcard/AndroidForClaw/config/openclaw.json` 配置 Agent 设置、渠道和网关。
-
-完整配置选项参考 [config/openclaw.json.example](config/openclaw.json.example)。
+**注意**: AndroidForClaw 不使用 `openclaw.json`。完整配置选项参考 [config/models.json.example](config/models.json.example)。
 
 ---
 

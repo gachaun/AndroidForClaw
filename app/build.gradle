@@ -10,33 +10,27 @@ def buildTime = new Date().format("yyyyMMddHH", TimeZone.getTimeZone("Asia/Shang
 
 android {
     signingConfigs {
-        release {
-            // Release 签名配置
-            // 如需发布 release 版本，请创建 keystore.properties 文件包含：
-            // storeFile=../your-keystore.jks
-            // storePassword=your-store-password
-            // keyPassword=your-key-password
-            // keyAlias=your-key-alias
-            def keystorePropertiesFile = rootProject.file("keystore.properties")
-            if (keystorePropertiesFile.exists()) {
-                def keystoreProperties = new Properties()
-                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-                storeFile rootProject.file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyPassword keystoreProperties['keyPassword']
-                keyAlias keystoreProperties['keyAlias']
-            }
+        debug {
+            // Debug和Release使用相同签名
+            keyAlias 'key0'
+            keyPassword 'phoneforclaw'
+            storeFile project.rootProject.file('test.keystore')
+            storePassword 'phoneforclaw'
             enableV1Signing true
             enableV2Signing true
             enableV3Signing true
             enableV4Signing true
         }
-        debug {
-            // Debug 签名使用测试证书 (项目根目录)
+        release {
+            // Release使用与Debug相同的签名
             keyAlias 'key0'
             keyPassword 'phoneforclaw'
             storeFile project.rootProject.file('test.keystore')
             storePassword 'phoneforclaw'
+            enableV1Signing true
+            enableV2Signing true
+            enableV3Signing true
+            enableV4Signing true
         }
     }
     compileSdk 34

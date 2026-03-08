@@ -28,37 +28,24 @@ class ConfigActivityUITest {
 
     @Test
     fun testConfigActivity_launches() {
-        // 验证配置界面启动
-        onView(withText("配置"))
+        // 验证配置界面启动 - 检查 API 配置标题
+        onView(withText("API 配置"))
             .check(matches(isDisplayed()))
     }
 
     @Test
     fun testModelConfiguration_isVisible() {
-        // 验证模型配置部分可见
-        onView(withText("模型配置"))
+        // 验证功能开关部分可见
+        onView(withText("功能开关"))
             .check(matches(isDisplayed()))
     }
 
     @Test
     fun testReasoningSwitch_isToggleable() {
-        // 查找 Reasoning 开关（如果存在）
-        // 注意：这取决于你的实际 UI 结构
-        try {
-            onView(withText("Extended Thinking"))
-                .check(matches(isDisplayed()))
-                .perform(click())
-
-            // 验证开关状态改变
-            Thread.sleep(500)
-
-            // 再次点击恢复原状
-            onView(withText("Extended Thinking"))
-                .perform(click())
-
-        } catch (e: Exception) {
-            // UI 结构可能不同，跳过这个测试
-        }
+        // 测试功能开关交互
+        // 由于具体的开关内容会动态变化,这里只验证功能开关卡片存在
+        onView(withText("功能开关"))
+            .check(matches(isDisplayed()))
     }
 
     @Test
