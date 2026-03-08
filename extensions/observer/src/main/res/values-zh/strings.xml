@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AndroidForClaw 服务</string>
-    <string name="accessibility_service_description">AndroidForClaw 设备服务 - 提供无障碍控制和屏幕捕获功能</string>
+    <string name="app_name">S4Claw</string>
+    <string name="accessibility_service_description">Screen4Claw 设备服务 - 提供无障碍控制和屏幕捕获功能</string>
 
     <!-- 权限活动 -->
     <string name="permission_activity_title">权限设置</string>
@@ -33,6 +33,6 @@
     <!-- 通知 -->
     <string name="notification_channel_name">服务状态</string>
     <string name="notification_channel_desc">显示服务运行状态</string>
-    <string name="notification_title">AndroidForClaw 服务运行中</string>
+    <string name="notification_title">Screen4Claw 服务运行中</string>
     <string name="notification_content">无障碍和屏幕捕获服务已激活</string>
 </resources>

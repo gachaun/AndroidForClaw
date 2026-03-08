@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AndroidForClaw Service</string>
-    <string name="accessibility_service_description">AndroidForClaw Device Service - Provides accessibility control and screen capture functions</string>
+    <string name="app_name">S4Claw</string>
+    <string name="accessibility_service_description">Screen4Claw - Provides accessibility control and screen capture functions</string>
 
     <!-- Permission Activity -->
     <string name="permission_activity_title">Permission Setup</string>
@@ -33,6 +33,6 @@
     <!-- Notifications -->
     <string name="notification_channel_name">Service Status</string>
     <string name="notification_channel_desc">Shows service running status</string>
-    <string name="notification_title">AndroidForClaw Service Running</string>
+    <string name="notification_title">Screen4Claw Service Running</string>
     <string name="notification_content">Accessibility and screen capture services active</string>
 </resources>
