@@ -41,16 +41,16 @@
 
 1. **下载 APK**
    ```
-   androidforclaw-v2.4.3-debug.apk          (主应用, 39MB)
-   androidforclaw-observer-v2.4.3.apk       (观察者: UI树+截图, 4.3MB)
-   BClaw-universal-release.apk              (AI 浏览器, 可选)
+   androidforclaw-v2.4.3-debug.apk          (主应用, ~40MB)
+   S4Claw-v1.0.0.apk                        (Screen4Claw: 无障碍服务+截图, ~5MB)
+   B4Claw-v1.0.0.apk                        (Browser4Claw: AI 浏览器, 可选)
    ```
 
 2. **安装**
    ```bash
    adb install releases/androidforclaw-v2.4.3-debug.apk
-   adb install releases/androidforclaw-observer-v2.4.3.apk
-   adb install releases/BClaw-universal-release.apk  # 可选
+   adb install releases/S4Claw-v1.0.0.apk
+   adb install releases/B4Claw-v1.0.0.apk  # 可选
    ```
 
 3. **配置 API**
@@ -61,10 +61,11 @@
    - 或在手机上直接编辑: `/sdcard/AndroidForClaw/config/openclaw.json`
 
 4. **授予权限**
-   - 打开应用并授予:
-     - ✅ 无障碍服务
-     - ✅ 悬浮窗权限
-     - ✅ 录屏权限
+   - 打开 **S4Claw** 应用并启用:
+     - ✅ 无障碍服务 (设备控制必需)
+     - ✅ 录屏权限 (截图功能必需)
+   - 打开**主应用**并授予:
+     - ✅ 悬浮窗权限 (悬浮窗显示必需)
 
 **开始使用**: 在飞书/Discord 发送消息即可控制手机！
 
@@ -86,14 +87,15 @@
 
 3. **构建安装**
    ```bash
-   ./gradlew :app:assembleDebug :extensions:observer:assembleRelease
+   # 构建主应用和 S4Claw
+   ./gradlew :app:assembleDebug :extensions:observer:assembleDebug
    adb install app/build/outputs/apk/debug/app-debug.apk
-   adb install extensions/observer/build/outputs/apk/release/observer-release-unsigned.apk
+   adb install extensions/observer/build/outputs/apk/debug/observer-debug.apk
 
-   # 可选: 构建 BClaw 浏览器
+   # 可选: 构建 B4Claw 浏览器
    cd extensions/BrowserForClaw/android-project
-   ./gradlew assembleRelease
-   adb install app/build/outputs/apk/release/app-universal-release-unsigned.apk
+   ./gradlew assembleDebug
+   adb install app/build/outputs/apk/debug/app-universal-debug.apk
    ```
 
 ---

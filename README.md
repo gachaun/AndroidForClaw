@@ -41,16 +41,16 @@
 
 1. **Download APK**
    ```
-   androidforclaw-v2.4.3-debug.apk          (Main app, 39MB)
-   androidforclaw-observer-v2.4.3.apk       (Observer: UI Tree + Screenshot, 4.3MB)
-   BClaw-universal-release.apk              (Browser for AI, Optional)
+   androidforclaw-v2.4.3-debug.apk          (Main app, ~40MB)
+   S4Claw-v1.0.0.apk                        (Screen4Claw: Accessibility & Screenshot, ~5MB)
+   B4Claw-v1.0.0.apk                        (Browser4Claw: Browser for AI, Optional)
    ```
 
 2. **Install**
    ```bash
    adb install releases/androidforclaw-v2.4.3-debug.apk
-   adb install releases/androidforclaw-observer-v2.4.3.apk
-   adb install releases/BClaw-universal-release.apk  # Optional
+   adb install releases/S4Claw-v1.0.0.apk
+   adb install releases/B4Claw-v1.0.0.apk  # Optional
    ```
 
 3. **Configure API**
@@ -61,10 +61,11 @@
    - Or edit directly on phone: `/sdcard/AndroidForClaw/config/openclaw.json`
 
 4. **Grant Permissions**
-   - Open app and grant:
-     - ✅ Accessibility Service
-     - ✅ Display Over Apps
-     - ✅ Media Projection (Screenshot)
+   - Open **S4Claw** app and enable:
+     - ✅ Accessibility Service (Required for device control)
+     - ✅ Media Projection (Required for screenshots)
+   - Open **Main app** and grant:
+     - ✅ Display Over Apps (Required for floating window)
 
 **Get Started**: Send messages in Feishu/Discord to control your phone!
 
@@ -86,14 +87,15 @@
 
 3. **Build & Install**
    ```bash
-   ./gradlew :app:assembleDebug :extensions:observer:assembleRelease
+   # Build main app and S4Claw
+   ./gradlew :app:assembleDebug :extensions:observer:assembleDebug
    adb install app/build/outputs/apk/debug/app-debug.apk
-   adb install extensions/observer/build/outputs/apk/release/observer-release-unsigned.apk
+   adb install extensions/observer/build/outputs/apk/debug/observer-debug.apk
 
-   # Optional: Build BClaw browser
+   # Optional: Build B4Claw browser
    cd extensions/BrowserForClaw/android-project
-   ./gradlew assembleRelease
-   adb install app/build/outputs/apk/release/app-universal-release-unsigned.apk
+   ./gradlew assembleDebug
+   adb install app/build/outputs/apk/debug/app-universal-debug.apk
    ```
 
 ---
