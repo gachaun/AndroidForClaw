@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">BClaw</string>
+    <string name="app_name">B4Claw</string>
     <string name="list_empty">La lista actual está vacía.</string>
     <string name="bookmarks">Marcadores</string>
     <string name="album_title_history">Historial</string>
@@ -29,7 +29,7 @@
     <string name="menu_save_pdf">Guardar como PDF</string>
     <string name="menu_shareClipboard">Copiar al portapapeles</string>
     <string name="menu_other_searchSite">Buscar en el sitio</string>
-    <string name="menu_other_info">Sobre EinkBro</string>
+    <string name="menu_other_info">Sobre Browser4Claw</string>
 
     <!-- Dialog -->
     <string name="dialog_title_hint">Título:</string>
@@ -90,9 +90,9 @@
     <string name="save_history_mode_disabled">No guardar</string>
 
     <!-- Browser clear -->
-    <string name="data_summary">Todos los archivos se exportarán al directorio \"Android/data/info.plateaukao.einkbro/files/browser_backup/\" de tu tarjeta SD. Este directorio se ELIMINARÁ si desinstalas EinkBro, así que haz copias de seguridad regularmente en un lugar seguro</string>
+    <string name="data_summary">Todos los archivos se exportarán al directorio \"Android/data/info.plateaukao.einkbro/files/browser_backup/\" de tu tarjeta SD. Este directorio se ELIMINARÁ si desinstalas Browser4Claw, así que haz copias de seguridad regularmente en un lugar seguro</string>
     <string name="clear_title_quit">Limpiar al salir de la app</string>
-    <string name="clear_summary_quit">Cada vez que salgas de EinkBro, se eliminarán todos los datos marcados arriba</string>
+    <string name="clear_summary_quit">Cada vez que salgas de Browser4Claw, se eliminarán todos los datos marcados arriba</string>
     <string name="clear_title_cache">Limpiar caché</string>
     <string name="clear_title_cookie">Limpiar cookies</string>
     <string name="clear_title_history">Limpiar historial</string>
@@ -186,7 +186,7 @@
     <string name="toast_error">Ups, algo ha salido mal…</string>
     <string name="toast_edit_successful">¡Guardado con éxito!</string>
     <string name="toast_webview_forward">No se puede cargar el siguiente sitio</string>
-    <string name="toast_restart">Debes reiniciar EinkBro para aplicar los cambios. ¿Cerrar ahora?</string>
+    <string name="toast_restart">Debes reiniciar Browser4Claw para aplicar los cambios. ¿Cerrar ahora?</string>
     <string name="toast_close_tab">¿Quieres cerrar la pestaña actual?</string>
     <string name="toast_downloadComplete">Descarga completa. ¿Abrir archivo?</string>
     <string name="toast_backup">¿Crear copia de seguridad de datos? Esto sobrescribirá la copia de seguridad antigua.</string>

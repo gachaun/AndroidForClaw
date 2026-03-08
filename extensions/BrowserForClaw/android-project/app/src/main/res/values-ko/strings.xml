@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">BClaw</string>
+    <string name="app_name">B4Claw</string>
     <string name="list_empty">현재 목록이 비어 있습니다.</string>
     <string name="bookmarks">북마크</string>
     <string name="album_title_history">히스토리</string>
@@ -34,7 +34,7 @@
     <string name="menu_shareClipboard">클립보드에 복사</string>
 
     <string name="menu_other_searchSite">사이트 내 검색</string>
-    <string name="menu_other_info">EinkBro 정보</string>
+    <string name="menu_other_info">Browser4Claw 정보</string>
 
     <!-- Dialog -->
     <string name="dialog_title_hint">제목:</string>
@@ -116,9 +116,9 @@
 
     <!-- Browser clear -->
     <string name="data_summary">모든 파일은 sd 카드의 “Android/data/info.plateaukao.einkbro/files/browser_backup/” 디렉토리에 내보내집니다.
-        이 디렉토리는 EinkBro를 제거하면 삭제됩니다. 따라서 안전한 위치에 정기적으로 백업을 만드십시오.</string>
+        이 디렉토리는 Browser4Claw를 제거하면 삭제됩니다. 따라서 안전한 위치에 정기적으로 백업을 만드십시오.</string>
     <string name="clear_title_quit">앱 종료 시 지우기</string>
-    <string name="clear_summary_quit">EinkBro를 종료할 때마다 선택한 모든 데이터가 삭제됩니다.</string>
+    <string name="clear_summary_quit">Browser4Claw를 종료할 때마다 선택한 모든 데이터가 삭제됩니다.</string>
     <string name="clear_title_cache">캐시 지우기</string>
     <string name="clear_title_cookie">쿠키 지우기</string>
     <string name="clear_title_history">히스토리 지우기</string>
@@ -233,7 +233,7 @@
     <string name="toast_error">죄송합니다. 오류가 발생했습니다…</string>
     <string name="toast_edit_successful">저장되었습니다!</string>
     <string name="toast_webview_forward">다음 사이트를 로드할 수 없습니다.</string>
-    <string name="toast_restart">변경 사항을 적용하려면 EinkBro를 다시 시작해야 합니다. 지금 닫겠습니까?</string>
+    <string name="toast_restart">변경 사항을 적용하려면 Browser4Claw를 다시 시작해야 합니다. 지금 닫겠습니까?</string>
     <string name="toast_close_tab">현재 탭을 닫겠습니까?</string>
     <string name="toast_downloadComplete">다운로드가 완료되었습니다. 파일을 열겠습니까?</string>
     <string name="toast_backup">데이터 백업을 생성하시겠습니까? 이렇게 하면 이전 백업이 덮어쓰여집니다.</string>

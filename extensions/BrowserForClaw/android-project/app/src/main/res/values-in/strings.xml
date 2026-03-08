@@ -4,7 +4,7 @@
 
 
     <!-- App -->
-    <string name="app_name">BClaw</string>
+    <string name="app_name">B4Claw</string>
     <string name="list_empty">Daftar saat ini kosong.</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="album_title_history">Riwayat</string>
@@ -37,7 +37,7 @@
     <string name="menu_shareClipboard">Salin ke papan klip</string>
 
     <string name="menu_other_searchSite">Cari di situs</string>
-    <string name="menu_other_info">Tentang EinkBro</string>
+    <string name="menu_other_info">Tentang Browser4Claw</string>
 
     <!-- Dialog -->
     <string name="dialog_title_hint">Judul:</string>
@@ -110,10 +110,10 @@
 
     <!-- browser clear -->
     <string name="data_summary">Semua file akan diekspor ke \"Android/data/info.plateaukao.einkbro/files/browser_backup/\"
-        direktori sd-card Anda. Direktori ini akan DIHAPUS, jika Anda menghapus EinkBro. Jadi lakukan backup secara rutin di tempat
+        direktori sd-card Anda. Direktori ini akan DIHAPUS, jika Anda menghapus Browser4Claw. Jadi lakukan backup secara rutin di tempat
         aman.</string>
     <string name="clear_title_quit">Hapus saat keluar aplikasi</string>
-    <string name="clear_summary_quit">Setiap kali Anda keluar dari EinkBro, semua data yang dicentang di atas akan dihapus.</string>
+    <string name="clear_summary_quit">Setiap kali Anda keluar dari Browser4Claw, semua data yang dicentang di atas akan dihapus.</string>
     <string name="clear_title_cache">Hapus Cache</string>
     <string name="clear_title_cookie">Hapus Cookies</string>
     <string name="clear_title_history">Hapus Riwayat</string>
@@ -224,7 +224,7 @@
     <string name="toast_edit_successful">Berhasil disimpan</string>
     <string name="toast_webview_forward">Tidak dapat memuat situs berikutnya
 </string>
-    <string name="toast_restart">Anda harus memulai ulang EinkBro untuk menerapkan perubahan. Tutup sekarang?</string>
+    <string name="toast_restart">Anda harus memulai ulang Browser4Claw untuk menerapkan perubahan. Tutup sekarang?</string>
     <string name="toast_close_tab">Apakah Anda ingin menutup tab saat ini?</string>
     <string name="toast_downloadComplete">Selesai mengunduh. Ingin membuka file?</string>
     <string name="toast_backup">Cadangankan data? Ini akan menimpa cadangan lama.</string>

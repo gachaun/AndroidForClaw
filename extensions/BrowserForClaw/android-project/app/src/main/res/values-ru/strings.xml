@@ -2,7 +2,7 @@
 
 <resources>
     <!-- App -->
-    <string name="app_name">BClaw</string>
+    <string name="app_name">B4Claw</string>
     <string name="list_empty">Текущий список пуст. </string>
     <string name="bookmarks">Закладки</string>
     <string name="album_title_history">История</string>
@@ -34,7 +34,7 @@
     <string name="menu_shareClipboard">Копировать в буфер</string>
 
     <string name="menu_other_searchSite">Найти на странице</string>
-    <string name="menu_other_info">О программе EinkBro</string>
+    <string name="menu_other_info">О программе Browser4Claw</string>
 
     <!-- Dialog -->
     <string name="dialog_title_hint">Заголовок:</string>
@@ -116,9 +116,9 @@
 
     <!-- Browser clear -->
     <string name="data_summary">Все файлы будут экспортированы в каталог \"Android/data/info.plateaukao.einkbro/files/browser_backup/\".
-        Этот каталог будет УДАЛЕН, если Вы удалите EinkBro, поэтому регулярно делайте резервные копии</string>
+        Этот каталог будет УДАЛЕН, если Вы удалите Browser4Claw, поэтому регулярно делайте резервные копии</string>
     <string name="clear_title_quit">Очищать данные при выходе из приложения</string>
-    <string name="clear_summary_quit">Каждый раз при выходе из EinkBro все вышеперечисленные выбранные данные будут удаляться</string>
+    <string name="clear_summary_quit">Каждый раз при выходе из Browser4Claw все вышеперечисленные выбранные данные будут удаляться</string>
     <string name="clear_title_cache">Очистить кэш</string>
     <string name="clear_title_cookie">Очистить куки</string>
     <string name="clear_title_history">Очистить историю</string>
@@ -237,7 +237,7 @@
     <string name="toast_error">Упс, что-то пошло не так…</string>
     <string name="toast_edit_successful">Успешно сохранено!</string>
     <string name="toast_webview_forward">Не удается загрузить следующий сайт</string>
-    <string name="toast_restart">Чтобы применить изменения, необходимо перезапустить EinkBro. Закрыть сейчас?</string>
+    <string name="toast_restart">Чтобы применить изменения, необходимо перезапустить Browser4Claw. Закрыть сейчас?</string>
     <string name="toast_close_tab">Хотите закрыть текущую вкладку?</string>
     <string name="toast_downloadComplete">Загрузка завершена. Открыть файл?</string>
     <string name="toast_backup">Сохранить данные? Это перезапишет старую резервную копию</string>

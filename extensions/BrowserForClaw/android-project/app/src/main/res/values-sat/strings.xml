@@ -4,7 +4,7 @@
 
 
     <!-- App -->
-    <string name="app_name">BClaw</string>
+    <string name="app_name">B4Claw</string>
     <string name="list_empty">ᱱᱤᱛᱚᱜᱟᱜ ᱞᱤᱥᱴᱤ ᱫᱚ ᱠᱷᱟᱹᱞᱤ ᱜᱮᱭᱟ ᱾</string>
     <string name="bookmarks">ᱵᱩᱠᱢᱟᱨᱠ ᱠᱚ</string>
     <string name="album_title_history">ᱱᱟᱜᱟᱢ</string>
@@ -37,7 +37,7 @@
     <string name="menu_shareClipboard">ᱨᱮᱴᱚᱯᱵᱚᱰᱨᱮ ᱨᱮ ᱱᱚᱠᱚᱞᱮᱱᱟ!</string>
 
     <string name="menu_other_searchSite">ᱥᱟᱭᱤᱴ ᱨᱮ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ</string>
-    <string name="menu_other_info">EinkBro ᱵᱟᱵᱚᱛ</string>
+    <string name="menu_other_info">Browser4Claw ᱵᱟᱵᱚᱛ</string>
 
     <!-- Dialog -->
     <string name="dialog_title_hint">ᱧᱩᱛᱩᱢ:</string>
@@ -106,9 +106,9 @@
 
 
     <!-- Browser clear -->
-    <string name="data_summary">ᱡᱚᱛᱚ ᱨᱮᱫᱽ ᱠᱚ "Android/data/info.plateaukao.einkbro/files/browser_backup/" ᱨᱮ ᱵᱷᱮᱡᱟᱜᱼᱟ ᱡᱟᱦᱟᱸ ᱫᱚ ᱟᱢᱟᱜ SD ᱠᱟᱨᱰᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱠᱟᱛᱮ ᱛᱟᱦᱮᱸᱱᱟ ᱾ ᱱᱚᱶᱟ ᱯᱚᱪᱚᱢ ᱫᱚ ᱢᱮᱴᱟᱣᱜᱼᱟ, ᱡᱩᱫᱤ ᱟᱢ EinkBro ᱚᱰᱚᱠ ᱜᱤᱰᱤ ᱠᱷᱟᱱ ᱾ ᱢᱮᱱᱠᱷᱟᱱ ᱡᱟᱭᱜᱟ ᱵᱟᱧᱪᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱜᱷᱤᱲ ᱜᱮ ᱵᱮᱠᱚᱯᱷ ᱠᱚᱨᱟᱣ ᱢᱮ ᱾</string>
+    <string name="data_summary">ᱡᱚᱛᱚ ᱨᱮᱫᱽ ᱠᱚ "Android/data/info.plateaukao.einkbro/files/browser_backup/" ᱨᱮ ᱵᱷᱮᱡᱟᱜᱼᱟ ᱡᱟᱦᱟᱸ ᱫᱚ ᱟᱢᱟᱜ SD ᱠᱟᱨᱰᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱠᱟᱛᱮ ᱛᱟᱦᱮᱸᱱᱟ ᱾ ᱱᱚᱶᱟ ᱯᱚᱪᱚᱢ ᱫᱚ ᱢᱮᱴᱟᱣᱜᱼᱟ, ᱡᱩᱫᱤ ᱟᱢ Browser4Claw ᱚᱰᱚᱠ ᱜᱤᱰᱤ ᱠᱷᱟᱱ ᱾ ᱢᱮᱱᱠᱷᱟᱱ ᱡᱟᱭᱜᱟ ᱵᱟᱧᱪᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱜᱷᱤᱲ ᱜᱮ ᱵᱮᱠᱚᱯᱷ ᱠᱚᱨᱟᱣ ᱢᱮ ᱾</string>
     <string name="clear_title_quit">ᱮᱯᱞᱤᱠᱮᱥᱚᱱ ᱵᱚᱸᱫ ᱞᱮᱠᱷᱟᱱ ᱪᱷᱟᱯᱟᱭ ᱢᱮ</string>
-    <string name="clear_summary_quit">ᱡᱟᱦᱟᱸ ᱛᱤᱥ ᱟᱢ EinkBro ᱠᱷᱚᱱ ᱪᱟᱞᱟᱜᱼᱟ ᱟᱢᱟᱜ ᱡᱚᱛᱚ ᱪᱤᱱᱦᱟᱹ ᱟᱠᱟᱱ ᱰᱟᱴᱟ ᱠᱚ ᱢᱮᱴᱟᱣᱜᱼᱟ ᱾</string>
+    <string name="clear_summary_quit">ᱡᱟᱦᱟᱸ ᱛᱤᱥ ᱟᱢ Browser4Claw ᱠᱷᱚᱱ ᱪᱟᱞᱟᱜᱼᱟ ᱟᱢᱟᱜ ᱡᱚᱛᱚ ᱪᱤᱱᱦᱟᱹ ᱟᱠᱟᱱ ᱰᱟᱴᱟ ᱠᱚ ᱢᱮᱴᱟᱣᱜᱼᱟ ᱾</string>
     <string name="clear_title_cache">ᱠᱮᱪ ᱥᱟᱯᱷᱟᱭ ᱢᱮ</string>
     <string name="clear_title_cookie">ᱠᱩᱠᱤᱡᱽ ᱥᱟᱯᱷᱟᱭ ᱢᱮ</string>
     <string name="clear_title_history">ᱦᱤᱛᱟᱹᱞ ᱯᱷᱟᱨᱪᱟᱭ ᱢᱮ</string>
@@ -221,7 +221,7 @@
     <string name="toast_error">ᱮᱦᱮ, ᱪᱮᱫ ᱪᱷᱚᱸ ᱢᱤᱫᱴᱟᱹᱝ ᱵᱷᱩᱞ ᱦᱩᱭᱮᱱᱟ...</string>
     <string name="toast_edit_successful">ᱨᱟᱹᱥ ᱞᱮᱠᱟᱛᱮ ᱥᱟᱧᱪᱟᱣ ᱮᱱᱟ!</string>
     <string name="toast_webview_forward">ᱤᱱᱟᱹ ᱛᱟᱭᱚᱢᱟᱜ ᱥᱟᱭᱤᱴᱫᱚ ᱞᱟᱫᱮ ᱵᱟᱭ ᱜᱟᱱ ᱞᱮᱱᱟ</string>
-    <string name="toast_restart">ᱵᱚᱫᱚᱞᱠᱚ ᱫᱚᱦᱚ ᱞᱟᱹᱜᱤᱫ ᱟᱢ EinkBro ᱫᱩᱦᱲᱟᱹ ᱮᱛᱵᱚᱵ ᱛᱮ ᱦᱩᱭᱟᱢᱟ ᱾ ᱱᱤᱛᱚᱜ ᱵᱚᱸᱫᱚᱭ ᱟ ᱥᱮ ?</string>
+    <string name="toast_restart">ᱵᱚᱫᱚᱞᱠᱚ ᱫᱚᱦᱚ ᱞᱟᱹᱜᱤᱫ ᱟᱢ Browser4Claw ᱫᱩᱦᱲᱟᱹ ᱮᱛᱵᱚᱵ ᱛᱮ ᱦᱩᱭᱟᱢᱟ ᱾ ᱱᱤᱛᱚᱜ ᱵᱚᱸᱫᱚᱭ ᱟ ᱥᱮ ?</string>
     <string name="toast_close_tab">ᱟᱢ ᱱᱮᱛᱚᱜᱟᱜ ᱴᱮᱵᱽ ᱵᱚᱸᱫᱜ ᱥᱟᱱᱟᱢ ᱠᱟᱱᱟ ᱥᱮ ?</string>
     <string name="toast_downloadComplete">ᱰᱟᱣᱩᱱᱞᱚᱰ ᱪᱟᱵᱟᱭᱮᱱᱟ ᱾ ᱨᱮᱫ ᱡᱷᱤᱡᱽᱟᱢ ᱥᱮ ?</string>
     <string name="toast_backup">ᱰᱟᱴᱟ ᱵᱮᱠᱤᱯ ᱛᱮᱭᱟᱨᱟᱢ ᱥᱮ ? ᱱᱚᱶᱟ ᱫᱚ ᱢᱟᱨᱮ ᱵᱮᱠ-ᱟᱯᱷ ᱪᱮᱛᱟᱱ ᱨᱮ ᱚᱞ ᱟ ᱾</string>

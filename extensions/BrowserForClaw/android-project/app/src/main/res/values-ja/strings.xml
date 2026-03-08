@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">BClaw</string>
+    <string name="app_name">B4Claw</string>
     <string name="list_empty">現在のリストは空です</string>
     <string name="bookmarks">ブックマーク</string>
     <string name="album_title_history">履歴</string>
@@ -28,7 +28,7 @@
     <string name="menu_save_pdf">PDF保存</string>
     <string name="menu_shareClipboard">コピー</string>
     <string name="menu_other_searchSite">サイト上の検索</string>
-    <string name="menu_other_info">EinkBro</string>
+    <string name="menu_other_info">Browser4Claw</string>
     <!-- Dialog -->
     <string name="dialog_title_hint">タイトル:</string>
     <string name="dialog_url_hint">URL:</string>
@@ -85,10 +85,10 @@
     <string name="setting_summary_history">閲覧したウェブサイトの履歴を保存</string>
     <!-- browser clear -->
     <string name="data_summary">All files will be exported to the \"Android/data/info.plateaukao.einkbro/files/browser_backup/\"
-        directory of your sd-card. This directory will be DELETED, if you uninstall EinkBro. So make a backup regularly on a save
+        directory of your sd-card. This directory will be DELETED, if you uninstall Browser4Claw. So make a backup regularly on a save
         place.</string>
     <string name="clear_title_quit">アプリ終了時に消去</string>
-    <string name="clear_summary_quit">Every time you quit EinkBro all above checked data will be deleted.</string>
+    <string name="clear_summary_quit">Every time you quit Browser4Claw all above checked data will be deleted.</string>
     <string name="clear_title_cache">キャッシュを削除</string>
     <string name="clear_title_cookie">クッキーを消去</string>
     <string name="clear_title_history">履歴を削除</string>
@@ -168,7 +168,7 @@
     <string name="toast_error">Uuups. Something went wrong.</string>
     <string name="toast_edit_successful">正常に保存されました</string>
     <string name="toast_webview_forward">Can\'t load next site</string>
-    <string name="toast_restart">You must restart EinkBro to apply changes. Close now?</string>
+    <string name="toast_restart">You must restart Browser4Claw to apply changes. Close now?</string>
     <string name="toast_close_tab">Do you want to close current tab?</string>
     <string name="toast_downloadComplete">Download complete. Open file?</string>
     <string name="toast_backup">Backup data? This will overwrite the old backup.</string>
@@ -194,7 +194,7 @@
     <string name="menu_send_link">リンク送る</string>
     <string name="menu_receive">データ受け取り</string>
     <string name="copy_link">コピー</string>
-    <string name="title_about">EinkBro について</string>
+    <string name="title_about">Browser4Claw について</string>
     <string name="menu_tts">読み上げ</string>
     <string name="changelog_dialog">新着情報</string>
     <string name="setting_title_update_adblock">Update Adblock content</string>

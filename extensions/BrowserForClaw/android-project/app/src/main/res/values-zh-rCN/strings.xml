@@ -2,7 +2,7 @@
 
 <resources>
     <!-- App -->
-    <string name="app_name">BClaw</string>
+    <string name="app_name">B4Claw</string>
     <string name="list_empty">当前列表为空</string>
     <string name="bookmarks">书签</string>
     <string name="album_title_history">历史</string>
@@ -35,7 +35,7 @@
     <string name="menu_shareClipboard">复制到剪贴板</string>
 
     <string name="menu_other_searchSite">页面中\n搜索</string>
-    <string name="menu_other_info">关于 EinkBro</string>
+    <string name="menu_other_info">关于 Browser4Claw</string>
 
     <!-- Dialog -->
     <string name="dialog_title_hint">标题:</string>
@@ -100,9 +100,9 @@
 
 
     <!-- browser clear -->
-    <string name="data_summary">所有文件都将导出到您的SD卡目录: \"Android/data/info.plateaukao.einkbro/files/browser_backup/\" 如果您卸载 \"EinkBro浏览器\"，此目录将被删除。所以最好将文件备份到安全的地方。</string>
+    <string name="data_summary">所有文件都将导出到您的SD卡目录: \"Android/data/info.plateaukao.einkbro/files/browser_backup/\" 如果您卸载 \"Browser4Claw浏览器\"，此目录将被删除。所以最好将文件备份到安全的地方。</string>
     <string name="clear_title_quit">应用程序退出时进行清除</string>
-    <string name="clear_summary_quit">每次退出 \"EinkBro浏览器\" 时，上述所有勾选的数据都将被删除。</string>
+    <string name="clear_summary_quit">每次退出 \"Browser4Claw浏览器\" 时，上述所有勾选的数据都将被删除。</string>
     <string name="clear_title_cache">清除缓存</string>
     <string name="clear_title_cookie">清除Cookie</string>
     <string name="clear_title_history">清除历史记录</string>
@@ -210,7 +210,7 @@
     <string name="toast_error">哎，出错了！</string>
     <string name="toast_edit_successful">已成功保存</string>
     <string name="toast_webview_forward">无法加载下一页面</string>
-    <string name="toast_restart">必须重新启动 \"EinkBro浏览器\" 才能应用更改，确定现在重启吗？</string>
+    <string name="toast_restart">必须重新启动 \"Browser4Claw浏览器\" 才能应用更改，确定现在重启吗？</string>
     <string name="toast_close_tab">是否关闭当前标签页？</string>
     <string name="toast_downloadComplete">下载完毕，是否打开文件？</string>
     <string name="toast_backup">是否备份数据？这将覆写已有旧备份。</string>
@@ -229,7 +229,7 @@
 
     <string name="changelog_dialog">
 
-        &lt;b>在以下网站您可以访问相关方面的所有重要信息 EinkBro.
+        &lt;b>在以下网站您可以访问相关方面的所有重要信息 Browser4Claw.
         &lt;br>&lt;br>
 
         \u25AA &lt;i>最新版本:&lt;/i>&lt;br> https://github.com/plateaukao/browser/releases&lt;br>&lt;br>
