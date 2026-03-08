@@ -106,20 +106,7 @@
             android:exported="false"
             android:foregroundServiceType="dataSync|mediaProjection"
             tools:replace="android:exported,android:foregroundServiceType" />
-            
-        <!-- 无障碍服务 -->
-        <service
-            android:name="com.xiaomo.androidforclaw.service.PhoneAccessibilityService"
-            android:exported="true"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
-        </service>
-        
+
         <!-- ADB输入法服务 -->
         <service
             android:name="com.xiaomo.androidforclaw.service.AdbIME"

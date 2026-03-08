@@ -35,32 +35,62 @@ import com.tencent.mmkv.MMKV
 import com.xiaomo.androidforclaw.util.MMKVKeys
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 /**
  * 检查 S4Claw (observer扩展) 的无障碍服务是否已启用
+ *
+ * 注意：此方法只检查系统设置，不阻塞线程
  */
-fun isS4ClawAccessibilityEnabled(context: Context): Boolean {
-    return try {
-        val accessibilityEnabled = Settings.Secure.getInt(
-            context.contentResolver,
-            Settings.Secure.ACCESSIBILITY_ENABLED,
-            0
-        ) == 1
+suspend fun isS4ClawAccessibilityEnabled(context: Context): Boolean {
+    return withContext(Dispatchers.IO) {
+        try {
+            // 检查系统设置
+            val accessibilityEnabled = Settings.Secure.getInt(
+                context.contentResolver,
+                Settings.Secure.ACCESSIBILITY_ENABLED,
+                0
+            ) == 1
 
-        if (!accessibilityEnabled) return false
+            if (!accessibilityEnabled) {
+                Log.d("MainActivityCompose", "系统无障碍功能未启用")
+                return@withContext false
+            }
 
-        val enabledServices = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        ) ?: return false
+            val enabledServices = Settings.Secure.getString(
+                context.contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: return@withContext false
 
-        // S4Claw 的无障碍服务包名
-        val s4clawServiceName = "com.xiaomo.androidforclaw.accessibility/com.xiaomo.androidforclaw.accessibility.service.PhoneAccessibilityService"
+            // S4Claw 的无障碍服务包名
+            val s4clawServiceName = "com.xiaomo.androidforclaw.accessibility/com.xiaomo.androidforclaw.accessibility.service.PhoneAccessibilityService"
 
-        enabledServices.contains(s4clawServiceName)
-    } catch (e: Exception) {
-        Log.e("MainActivityCompose", "检查 S4Claw 无障碍服务失败", e)
-        false
+            val isEnabled = enabledServices.contains(s4clawServiceName)
+            Log.d("MainActivityCompose", "S4Claw 无障碍服务系统状态: $isEnabled")
+
+            // 如果系统显示已启用，尝试通过 AIDL 验证服务真正可用
+            if (isEnabled) {
+                try {
+                    // 确保绑定服务
+                    com.xiaomo.androidforclaw.accessibility.AccessibilityProxy.bindService(context)
+                    kotlinx.coroutines.delay(300)  // 异步等待连接
+
+                    // 使用异步方法检查
+                    val ready = com.xiaomo.androidforclaw.accessibility.AccessibilityProxy.isServiceReadyAsync()
+                    Log.d("MainActivityCompose", "S4Claw 无障碍服务 AIDL 可用性: $ready")
+                    return@withContext ready
+                } catch (e: Exception) {
+                    Log.w("MainActivityCompose", "AIDL 验证失败，使用系统设置结果", e)
+                    return@withContext isEnabled
+                }
+            }
+
+            isEnabled
+        } catch (e: Exception) {
+            Log.e("MainActivityCompose", "检查 S4Claw 无障碍服务失败", e)
+            false
+        }
     }
 }
 
@@ -441,12 +471,67 @@ fun StatusTab(
 @Composable
 fun PermissionsCard(onClick: () -> Unit) {
     val context = LocalContext.current
-    // 检查 S4Claw (observer) 的无障碍服务
-    val accessibility = isS4ClawAccessibilityEnabled(context)
-    // 检查悬浮窗权限
-    val overlay = Settings.canDrawOverlays(context)
-    // 检查截图权限
-    val screenCapture = MediaProjectionHelper.isMediaProjectionGranted()
+
+    // 使用 remember 和 LaunchedEffect 异步加载权限状态
+    var accessibility by remember { mutableStateOf(false) }
+    var overlay by remember { mutableStateOf(false) }
+    var screenCapture by remember { mutableStateOf(false) }
+
+    // 防止重复连接尝试
+    var isConnecting by remember { mutableStateOf(false) }
+
+    // 定期刷新权限状态（每3秒）
+    LaunchedEffect(Unit) {
+        while (true) {
+            // 在后台线程检查权限
+            withContext(Dispatchers.IO) {
+                try {
+                    // 检查悬浮窗权限
+                    overlay = Settings.canDrawOverlays(context)
+
+                    // 检查 S4Claw (observer) 的无障碍服务
+                    accessibility = isS4ClawAccessibilityEnabled(context)
+
+                    // 检查截图权限 - 查询 observer APK 的权限状态
+                    screenCapture = try {
+                        // 如果连接断开且不在连接中，尝试重连
+                        val isConnected = com.xiaomo.androidforclaw.accessibility.AccessibilityProxy.isConnected.value ?: false
+                        if (!isConnected && !isConnecting) {
+                            isConnecting = true
+                            Log.d("PermissionsCard", "AccessibilityProxy 未连接，启动连接...")
+                            com.xiaomo.androidforclaw.accessibility.AccessibilityProxy.bindService(context)
+
+                            // 等待一小段时间看是否能快速连接
+                            delay(300)
+                            val quickConnect = com.xiaomo.androidforclaw.accessibility.AccessibilityProxy.isConnected.value ?: false
+                            if (quickConnect) {
+                                Log.d("PermissionsCard", "AccessibilityProxy 快速连接成功")
+                            }
+                            isConnecting = false
+                        }
+
+                        // 立即返回当前状态
+                        if (com.xiaomo.androidforclaw.accessibility.AccessibilityProxy.isConnected.value == true) {
+                            com.xiaomo.androidforclaw.accessibility.AccessibilityProxy.getMediaProjectionStatus() == "已授权"
+                        } else {
+                            false
+                        }
+                    } catch (e: Exception) {
+                        Log.e("PermissionsCard", "检查录屏权限失败", e)
+                        isConnecting = false
+                        false
+                    }
+
+                    Log.d("PermissionsCard", "权限状态: 无障碍=$accessibility, 悬浮窗=$overlay, 录屏=$screenCapture")
+                } catch (e: Exception) {
+                    Log.e("PermissionsCard", "检查权限时出错", e)
+                }
+            }
+
+            // 每3秒刷新一次
+            delay(3000)
+        }
+    }
 
     val allGranted = accessibility && overlay && screenCapture
     val grantedCount = listOf(accessibility, overlay, screenCapture).count { it }
@@ -461,20 +546,6 @@ fun PermissionsCard(onClick: () -> Unit) {
             Text(
                 text = "权限",
                 style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = if (allGranted) "已授权" else "已授予 $grantedCount/3 个权限",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (allGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "无障碍: ${if (accessibility) "✓" else "✗"}  " +
-                        "悬浮窗: ${if (overlay) "✓" else "✗"}  " +
-                        "录屏: ${if (screenCapture) "✓" else "✗"}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

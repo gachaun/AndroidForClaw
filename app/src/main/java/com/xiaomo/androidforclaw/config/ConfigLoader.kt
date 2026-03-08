@@ -23,8 +23,10 @@ class ConfigLoader(private val context: Context) {
     companion object {
         private const val TAG = "ConfigLoader"
 
-        // 配置文件路径 (对齐 OpenClaw: ~/.openclaw/)
-        private const val CONFIG_DIR = "/sdcard/.androidforclaw/config"
+        // 配置文件路径 - 使用应用私有存储避免 UID 变化导致的权限问题
+        // 注意：这里不能使用 context.filesDir，因为 companion object 在类加载时初始化
+        // 实际路径会在 init 块中动态设置
+        private var CONFIG_DIR = "/data/data/com.xiaomo.androidforclaw/files/config"
         private const val OPENCLAW_CONFIG_FILE = "openclaw.json"
 
 
@@ -232,8 +234,81 @@ class ConfigLoader(private val context: Context) {
         .setPrettyPrinting()
         .create()
 
-    private val configDir = File(CONFIG_DIR)
-    private val openclawConfigFile = File(configDir, OPENCLAW_CONFIG_FILE)
+    // 动态配置目录（使用应用私有存储）
+    private val configDir: File
+    private val openclawConfigFile: File
+
+    init {
+        // 使用应用私有存储空间（避免 UID 变化导致的权限问题）
+        CONFIG_DIR = File(context.filesDir, "config").absolutePath
+        configDir = File(CONFIG_DIR)
+        openclawConfigFile = File(configDir, OPENCLAW_CONFIG_FILE)
+
+        Log.d(TAG, "配置目录: ${configDir.absolutePath}")
+
+        // 尝试从旧位置迁移配置文件（如果存在且可读）
+        migrateConfigFromOldLocation()
+    }
+
+    /**
+     * 从旧的 /sdcard/.androidforclaw 迁移配置到新位置
+     *
+     * 迁移策略：
+     * 1. 尝试直接复制文件（如果可读）
+     * 2. 如果复制失败（权限问题），通过 shell 命令读取并写入
+     *
+     * 旧位置： /sdcard/.androidforclaw/openclaw.json (注意: 不在 config 子目录)
+     * 新位置： /data/user/0/com.xiaomo.androidforclaw/files/config/openclaw.json
+     */
+    private fun migrateConfigFromOldLocation() {
+        try {
+            // 旧配置文件直接在 .androidforclaw 目录下，不在 config 子目录
+            val oldConfigFile = File("/sdcard/.androidforclaw", OPENCLAW_CONFIG_FILE)
+
+            // 如果旧配置文件存在且新配置文件不存在，尝试迁移
+            if (oldConfigFile.exists() && !openclawConfigFile.exists()) {
+                Log.i(TAG, "检测到旧配置文件，开始迁移: ${oldConfigFile.absolutePath}")
+                ensureConfigDir()
+
+                // 尝试方法 1: 直接复制（如果有权限）
+                try {
+                    if (oldConfigFile.canRead()) {
+                        oldConfigFile.copyTo(openclawConfigFile, overwrite = true)
+                        Log.i(TAG, "✅ 配置文件迁移成功 (方法1-直接复制): ${openclawConfigFile.absolutePath}")
+                        return
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "方法1失败: ${e.message}，尝试方法2...")
+                }
+
+                // 尝试方法 2: 通过 shell 读取（绕过权限限制）
+                try {
+                    val process = Runtime.getRuntime().exec(arrayOf("cat", oldConfigFile.absolutePath))
+                    val content = process.inputStream.bufferedReader().use { it.readText() }
+                    val exitCode = process.waitFor()
+
+                    if (exitCode == 0 && content.isNotBlank()) {
+                        openclawConfigFile.writeText(content)
+                        Log.i(TAG, "✅ 配置文件迁移成功 (方法2-shell读取): ${openclawConfigFile.absolutePath}")
+                        Log.i(TAG, "   迁移的配置文件大小: ${content.length} bytes")
+                        return
+                    } else {
+                        Log.w(TAG, "方法2失败: exit code $exitCode")
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "方法2失败: ${e.message}")
+                }
+
+                Log.w(TAG, "⚠️ 所有迁移方法均失败，将使用默认配置")
+            } else if (!oldConfigFile.exists()) {
+                Log.d(TAG, "旧配置文件不存在，无需迁移")
+            } else {
+                Log.d(TAG, "新配置文件已存在，跳过迁移")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "配置文件迁移失败（将使用默认配置）: ${e.message}")
+        }
+    }
 
     // 配置缓存
     private var cachedOpenClawConfig: OpenClawConfig? = null

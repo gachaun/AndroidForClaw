@@ -31,8 +31,24 @@ class PhoneAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        AccessibilityBinderService.serviceInstance = this
         Log.d(TAG, "onServiceConnected - Accessibility service ready")
+
+        // 先设置 serviceInstance
+        AccessibilityBinderService.serviceInstance = this
+        Log.d(TAG, "✅ serviceInstance 已设置")
+
+        // 通知 AccessibilityBinderService serviceInstance 已准备好
+        AccessibilityBinderService.notifyServiceReady()
+        Log.d(TAG, "✅ notifyServiceReady 已调用")
+
+        // 启动 AccessibilityBinderService，允许其他应用绑定
+        try {
+            val binderIntent = Intent(this, AccessibilityBinderService::class.java)
+            startService(binderIntent)
+            Log.i(TAG, "✅ AccessibilityBinderService 已启动")
+        } catch (e: Exception) {
+            Log.e(TAG, "启动 AccessibilityBinderService 失败", e)
+        }
 
         // 启动前台服务，显示通知
         try {
@@ -71,16 +87,19 @@ class PhoneAccessibilityService : AccessibilityService() {
         super.onDestroy()
         AccessibilityBinderService.serviceInstance = null
 
-        // 停止前台服务
+        // 停止 AccessibilityBinderService
         try {
-            val intent = Intent(this, com.xiaomo.androidforclaw.accessibility.ForegroundService::class.java)
-            stopService(intent)
-            Log.i(TAG, "✅ 前台服务已停止")
+            val binderIntent = Intent(this, AccessibilityBinderService::class.java)
+            stopService(binderIntent)
+            Log.i(TAG, "✅ AccessibilityBinderService 已停止")
         } catch (e: Exception) {
-            Log.e(TAG, "停止前台服务失败", e)
+            Log.e(TAG, "停止 AccessibilityBinderService 失败", e)
         }
 
-        Log.d(TAG, "onDestroy - Accessibility service destroyed")
+        // ⚠️ 不要停止前台服务!
+        // 前台服务需要保持运行以维持 MediaProjection 录屏权限
+        // 只有当用户手动重置权限时才应该停止
+        Log.d(TAG, "onDestroy - Accessibility service destroyed (前台服务继续运行)")
     }
 
     fun dumpView(): List<ViewNode> {

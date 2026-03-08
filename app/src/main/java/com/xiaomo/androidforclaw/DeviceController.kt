@@ -26,17 +26,34 @@ object DeviceController {
     fun getScreenshot(context: Context): Pair<Bitmap, String>? {
         return runBlocking {
             try {
-                val path = AccessibilityProxy.captureScreen()
-                if (path.isNotEmpty()) {
-                    val bitmap = BitmapFactory.decodeFile(path)
-                    if (bitmap != null) {
-                        Pair(bitmap, path)
+                val uriString = AccessibilityProxy.captureScreen()
+                if (uriString.isEmpty()) {
+                    Log.w(TAG, "截图失败：URI 为空")
+                    return@runBlocking null
+                }
+
+                Log.d(TAG, "Got screenshot URI: $uriString")
+
+                // 尝试作为 Content URI 解码
+                val bitmap = try {
+                    if (uriString.startsWith("content://")) {
+                        val uri = android.net.Uri.parse(uriString)
+                        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            BitmapFactory.decodeStream(inputStream)
+                        }
                     } else {
-                        Log.e(TAG, "无法解码截图: $path")
-                        null
+                        // 回退到文件路径
+                        BitmapFactory.decodeFile(uriString)
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to decode from URI/path: $uriString", e)
+                    null
+                }
+
+                if (bitmap != null) {
+                    Pair(bitmap, uriString)
                 } else {
-                    Log.w(TAG, "截图失败：路径为空")
+                    Log.e(TAG, "无法解码截图: $uriString")
                     null
                 }
             } catch (e: Exception) {

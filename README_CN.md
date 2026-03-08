@@ -41,16 +41,16 @@
 
 1. **下载 APK**
    ```
-   androidforclaw-v2.4.3-debug.apk          (主应用, ~40MB)
-   S4Claw-v1.0.0.apk                        (Screen4Claw: 无障碍服务+截图, ~5MB)
+   app-release.apk                          (主应用, ~31MB)
+   observer-release.apk                     (S4Claw: 无障碍服务+截图, ~4.3MB)
    B4Claw-v1.0.0.apk                        (Browser4Claw: AI 浏览器, 可选)
    ```
 
 2. **安装**
    ```bash
-   adb install releases/androidforclaw-v2.4.3-debug.apk
-   adb install releases/S4Claw-v1.0.0.apk
-   adb install releases/B4Claw-v1.0.0.apk  # 可选
+   adb install app-release.apk
+   adb install observer-release.apk
+   adb install B4Claw-v1.0.0.apk  # 可选
    ```
 
 3. **配置 API**

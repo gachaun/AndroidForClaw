@@ -38,10 +38,15 @@ object MediaProjectionHelper {
 
     // 用于保存截图的目录 (由外部设置)
     private var screenshotDir: File? = null
+    private var appContext: Context? = null
 
     fun setScreenshotDirectory(dir: File) {
         screenshotDir = dir
         if (!dir.exists()) dir.mkdirs()
+    }
+
+    fun setContext(context: Context) {
+        appContext = context.applicationContext
     }
 
     fun requestMediaProjection(activity: Activity): Boolean {
@@ -81,15 +86,20 @@ object MediaProjectionHelper {
      * 获取录屏权限状态
      */
     fun getPermissionStatus(): String {
-        return when {
+        val status = when {
             isPermissionGranted && mediaProjection != null -> STATUS_AUTHORIZED
             isPermissionGranted -> STATUS_OBJECT_NULL
             else -> STATUS_NOT_AUTHORIZED
         }
+        Log.d(TAG, "getPermissionStatus: $status (isPermissionGranted=$isPermissionGranted, mediaProjection=$mediaProjection, imageReader=$imageReader)")
+        return status
     }
     
     /**
      * 重置录屏权限状态
+     *
+     * 注意: 这会停止 MediaProjection 并清理资源,
+     * 但不会停止前台服务。前台服务需要持续运行以保持权限。
      */
     fun resetPermission() {
         isPermissionGranted = false
@@ -97,8 +107,28 @@ object MediaProjectionHelper {
         mediaProjection = null
         imageReader?.close()
         imageReader = null
+        Log.d(TAG, "📌 MediaProjection 权限已重置")
     }
-    
+
+    /**
+     * 完全释放录屏权限 (包括停止前台服务)
+     *
+     * ⚠️ 只有在用户明确要求释放权限时才调用此方法!
+     * 一般情况下应该让前台服务保持运行,这样权限不会失效。
+     */
+    fun releasePermissionCompletely(context: Context) {
+        resetPermission()
+
+        // 停止前台服务
+        try {
+            val intent = Intent(context, ForegroundService::class.java)
+            context.stopService(intent)
+            Log.i(TAG, "✅ 前台服务已停止 - 录屏权限完全释放")
+        } catch (e: Exception) {
+            Log.e(TAG, "停止前台服务失败", e)
+        }
+    }
+
     /**
      * 强制重新申请录屏权限
      */
@@ -172,7 +202,15 @@ object MediaProjectionHelper {
 
     fun captureScreen(): Pair<Bitmap, String>? {
         return try {
-            val image = imageReader?.acquireLatestImage() ?: return null
+            Log.d(TAG, "captureScreen called")
+            Log.d(TAG, "imageReader: $imageReader")
+            Log.d(TAG, "mediaProjection: $mediaProjection")
+
+            val image = imageReader?.acquireLatestImage() ?: run {
+                Log.e(TAG, "acquireLatestImage returned null")
+                return null
+            }
+            Log.d(TAG, "Image acquired: ${image.width}x${image.height}")
             val planes = image.planes
             val buffer = planes[0].buffer
             val pixelStride = planes[0].pixelStride
@@ -183,16 +221,24 @@ object MediaProjectionHelper {
             bitmap.copyPixelsFromBuffer(buffer)
             image.close()
 
-            var path = ""
             // 裁剪为实际屏幕大小
-            val bitmap2 = Bitmap.createBitmap(bitmap, 0, 0, screenWidth, screenHeight)?.also {
-                path = saveBitmap(it) ?: ""
-            }
+            val bitmap2 = Bitmap.createBitmap(bitmap, 0, 0, screenWidth, screenHeight)
             if (bitmap2 == null) {
-                null
-            } else {
-                Pair(bitmap2, path)
+                Log.e(TAG, "Failed to create cropped bitmap")
+                return null
             }
+
+            Log.d(TAG, "Bitmap created, saving...")
+            val path = saveBitmap(bitmap2) ?: ""
+            Log.d(TAG, "Bitmap saved to: $path")
+
+            if (path.isEmpty()) {
+                Log.e(TAG, "Failed to save bitmap")
+                return null
+            }
+
+            Log.d(TAG, "Returning result: path=$path, size=${bitmap2.width}x${bitmap2.height}")
+            Pair(bitmap2, path)
         } catch (e: Exception) {
             Log.e(TAG, "截图失败", e)
             null
@@ -200,6 +246,11 @@ object MediaProjectionHelper {
     }
 
     private fun saveBitmap(bitmap: Bitmap): String? {
+        val context = appContext ?: run {
+            Log.e(TAG, "Context not set")
+            return null
+        }
+
         val dir = screenshotDir ?: run {
             Log.e(TAG, "截图目录未设置")
             return null
@@ -211,7 +262,33 @@ object MediaProjectionHelper {
             FileOutputStream(file).use {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
             }
-            file.absolutePath
+            Log.d(TAG, "Saved to file: ${file.absolutePath}")
+
+            // 使用 FileProvider 获取 Content URI
+            val uri = try {
+                androidx.core.content.FileProvider.getUriForFile(
+                    context,
+                    "com.xiaomo.androidforclaw.accessibility.fileprovider",
+                    file
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to get URI from FileProvider", e)
+                return null
+            }
+
+            // 授予主应用读取权限
+            try {
+                context.grantUriPermission(
+                    "com.xiaomo.androidforclaw",
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+                Log.d(TAG, "Granted URI permission to main app: $uri")
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to grant URI permission", e)
+            }
+
+            uri.toString()  // 返回 Content URI
         } catch (e: Exception) {
             Log.e(TAG, "保存截图失败", e)
             null

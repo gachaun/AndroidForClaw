@@ -382,6 +382,20 @@ class SessionManager {
     }
 
     /**
+     * 替换当前会话的所有消息 (用于从后端同步)
+     */
+    fun replaceCurrentSessionMessages(messages: List<ChatMessage>) {
+        val current = _currentSession.value
+        val updatedSession = current.copy(messages = messages)
+
+        // 更新会话列表
+        _sessions.value = _sessions.value.map {
+            if (it.id == current.id) updatedSession else it
+        }
+        _currentSession.value = updatedSession
+    }
+
+    /**
      * 从当前会话移除消息
      */
     fun removeMessageFromCurrentSession(messageId: String) {

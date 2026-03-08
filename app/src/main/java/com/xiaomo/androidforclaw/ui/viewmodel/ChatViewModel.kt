@@ -9,21 +9,28 @@ import com.xiaomo.androidforclaw.ui.compose.ChatMessage
 import com.xiaomo.androidforclaw.ui.compose.MessageStatus
 import com.xiaomo.androidforclaw.ui.session.SessionManager
 import com.xiaomo.androidforclaw.util.ReasoningTagFilter
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * 聊天界面的 ViewModel - 支持多会话
+ * 聊天界面的 ViewModel - 单一数据源架构
+ *
+ * 架构原则:
+ * 1. SessionManager 是唯一的消息来源 (Single Source of Truth)
+ * 2. 定时同步后端消息,仅在有新消息时更新 UI
+ * 3. 避免重复消息和复杂的merge逻辑
  */
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         private const val TAG = "ChatViewModel"
+        private const val SYNC_INTERVAL = 3000L // 3秒
     }
 
-    // 使用 UI 的 SessionManager (仅用于显示)
+    // 单一数据源: SessionManager
     private val uiSessionManager = SessionManager()
     private val channelManager = ChannelManager(application)
 
@@ -31,118 +38,160 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     val sessions: StateFlow<List<SessionManager.Session>> = uiSessionManager.sessions
     val currentSession: StateFlow<SessionManager.Session> = uiSessionManager.currentSession
 
-    // 消息列表
+    // 消息列表 - 直接从 currentSession 获取
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // 追踪每个会话的同步状态
+    private val sessionSyncState = mutableMapOf<String, Int>() // sessionId -> lastMessageCount
+
     init {
-        // 监听当前会话变化，更新消息列表
+        // 监听 currentSession 变化,直接更新消息列表
         viewModelScope.launch {
-            uiSessionManager.currentSession.collect { session ->
+            currentSession.collect { session ->
                 _messages.value = session.messages
             }
         }
 
-        // 🔄 启动时从 MainEntryNew 的 SessionManager 加载历史消息
-        loadSessionHistory()
+        // 启动时初始化
+        viewModelScope.launch {
+            initialize()
+        }
 
-        // 🔄 定时刷新 (每 3 秒)
+        // 定时同步后端消息 (智能同步,仅在有新消息时更新)
         viewModelScope.launch {
             while (true) {
-                kotlinx.coroutines.delay(3000)
-                loadSessionHistory()
+                delay(SYNC_INTERVAL)
+                syncFromBackend()
             }
         }
     }
 
     /**
-     * 从 MainEntryNew 的 SessionManager 加载历史
+     * 初始化 - 启动时加载历史
      */
-    private fun loadSessionHistory() {
-        viewModelScope.launch {
-            try {
-                Log.d(TAG, "📥 [ViewModel] 加载会话历史...")
+    private suspend fun initialize() {
+        try {
+            Log.d(TAG, "🚀 [初始化] 开始...")
 
-                // 确保 MainEntryNew 已初始化
-                com.xiaomo.androidforclaw.core.MainEntryNew.initialize(getApplication())
+            // 确保 MainEntryNew 已初始化
+            com.xiaomo.androidforclaw.core.MainEntryNew.initialize(getApplication())
 
-                // 🔄 加载所有后端 sessions（飞书、Discord、WebSocket）
-                uiSessionManager.loadSessionsFromBackend()
+            // 加载所有后端 sessions (飞书/Discord/WebSocket)
+            uiSessionManager.loadSessionsFromBackend()
 
-                // ⚠️ 重要：只显示当前活动会话的消息
-                val currentSessionId = currentSession.value.id
-                Log.d(TAG, "📌 [ViewModel] 当前会话ID: $currentSessionId")
+            // 加载当前会话的消息
+            syncFromBackend()
 
-                // 如果当前会话是 UI 创建的新会话，从 agent session "default" 加载
-                // 如果是后端会话（飞书/Discord），则已经在 loadSessionsFromBackend 中加载了
-                if (currentSessionId.startsWith("discord_") ||
-                    currentSessionId.contains("_p2p") ||
-                    currentSessionId.contains("_group") ||
-                    currentSessionId.startsWith("session_")) {
-                    // 后端会话，消息已经在 currentSession.messages 中
-                    Log.d(TAG, "✅ [ViewModel] 使用后端会话消息: ${currentSession.value.messages.size} 条")
-                    return@launch
-                }
+            Log.d(TAG, "✅ [初始化] 完成")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ [初始化] 失败", e)
+        }
+    }
 
-                // UI 本地会话，从 agent session "default" 加载
-                val agentSessionManager = com.xiaomo.androidforclaw.core.MainEntryNew.getSessionManager()
-                val agentSession = agentSessionManager?.get("default")
+    /**
+     * 从后端同步消息 - 智能同步,仅在有新消息时更新
+     */
+    private suspend fun syncFromBackend() {
+        try {
+            val sessionId = currentSession.value.id
+            Log.d(TAG, "🔍 [同步检查] 会话: $sessionId")
 
-                if (agentSession != null && agentSession.messageCount() > 0) {
-                    Log.d(TAG, "✅ [ViewModel] 找到默认会话历史消息: ${agentSession.messageCount()} 条")
+            // 如果是后端会话,消息已在 loadSessionsFromBackend 中同步
+            if (isBackendSession(sessionId)) {
+                Log.d(TAG, "⏭️ [同步跳过] 后端会话")
+                return
+            }
 
-                    // 转换为 UI 的 ChatMessage
-                    val chatMessages = mutableListOf<ChatMessage>()
-                    agentSession.messages.forEach { msg ->
-                        val contentStr = when (val content = msg.content) {
-                            is String -> content
-                            null -> ""
-                            else -> content.toString()
-                        }
+            // UI 本地会话 - 使用当前会话ID作为后端session key
+            val agentSessionManager = com.xiaomo.androidforclaw.core.MainEntryNew.getSessionManager()
+            if (agentSessionManager == null) {
+                Log.w(TAG, "⚠️ [同步] SessionManager 未初始化")
+                return
+            }
 
-                        when (msg.role) {
-                            "user" -> {
-                                if (contentStr.isNotEmpty()) {
-                                    chatMessages.add(ChatMessage(
-                                        content = contentStr,
-                                        isUser = true,
-                                        status = MessageStatus.SENT
-                                    ))
-                                }
-                            }
-                            "assistant" -> {
-                                if (contentStr.isNotEmpty()) {
-                                    // 过滤推理标签 (<think>, <final> 等)
-                                    val cleanContent = ReasoningTagFilter.stripReasoningTags(contentStr)
+            // 使用当前会话ID获取对应的agent session
+            val agentSession = agentSessionManager.get(sessionId)
+            if (agentSession == null) {
+                Log.d(TAG, "ℹ️ [同步] 会话 $sessionId 无后端数据")
+                return
+            }
 
-                                    if (cleanContent.isNotEmpty()) {
-                                        chatMessages.add(ChatMessage(
-                                            content = cleanContent,
-                                            isUser = false,
-                                            status = MessageStatus.SENT
-                                        ))
-                                    }
-                                }
-                            }
-                        }
+            val newMessageCount = agentSession.messageCount()
+            val lastSyncedCount = sessionSyncState[sessionId] ?: 0
+            Log.d(TAG, "📊 [同步] last=$lastSyncedCount, new=$newMessageCount")
+
+            // 检查是否有新消息
+            if (newMessageCount <= lastSyncedCount) {
+                Log.d(TAG, "⏭️ [同步跳过] 无新消息")
+                return
+            }
+
+            Log.d(TAG, "🔄 [同步] 新消息: $lastSyncedCount -> $newMessageCount")
+
+            // 转换所有消息
+            val chatMessages = convertMessages(agentSession.messages)
+
+            // 更新 SessionManager (单一数据源)
+            uiSessionManager.replaceCurrentSessionMessages(chatMessages)
+
+            sessionSyncState[sessionId] = newMessageCount
+            Log.d(TAG, "✅ [同步] 完成: ${chatMessages.size} 条")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ [同步] 失败", e)
+        }
+    }
+
+    /**
+     * 转换后端消息为 UI 消息
+     */
+    private fun convertMessages(messages: List<com.xiaomo.androidforclaw.providers.LegacyMessage>): List<ChatMessage> {
+        return messages.mapNotNull { msg ->
+            val contentStr: String? = when (val content = msg.content) {
+                is String -> content
+                null -> null
+                else -> content.toString()
+            }
+
+            if (contentStr.isNullOrEmpty()) {
+                return@mapNotNull null
+            }
+
+            when (msg.role) {
+                "user" -> ChatMessage(
+                    content = contentStr,
+                    isUser = true,
+                    status = MessageStatus.SENT
+                )
+                "assistant" -> {
+                    val cleanContent = ReasoningTagFilter.stripReasoningTags(contentStr)
+                    if (cleanContent.isNotEmpty()) {
+                        ChatMessage(
+                            content = cleanContent,
+                            isUser = false,
+                            status = MessageStatus.SENT
+                        )
+                    } else {
+                        null
                     }
-
-                    // 更新 UI Session
-                    Log.d(TAG, "🔄 [ViewModel] 更新 UI 会话...")
-                    _messages.value = chatMessages
-                    Log.d(TAG, "✅ [ViewModel] 历史消息已加载: ${chatMessages.size} 条")
-                } else {
-                    Log.d(TAG, "ℹ️ [ViewModel] 没有历史消息")
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ [ViewModel] 加载历史失败", e)
+                else -> null
             }
         }
     }
 
+    /**
+     * 判断是否是后端会话
+     */
+    private fun isBackendSession(sessionId: String): Boolean {
+        return sessionId.startsWith("discord_") ||
+               sessionId.contains("_p2p") ||
+               sessionId.contains("_group") ||
+               sessionId.startsWith("session_")
+    }
 
     /**
      * 发送用户消息
@@ -150,9 +199,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     fun sendMessage(content: String) {
         if (content.isBlank()) return
 
-        Log.d(TAG, "💬 [ViewModel] 发送消息: $content")
+        Log.d(TAG, "💬 [发送] $content")
 
-        // 记录 inbound（用户消息）
+        // 记录 inbound
         channelManager.recordInbound()
 
         // 添加用户消息到 UI
@@ -161,84 +210,75 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             isUser = true,
             status = MessageStatus.SENT
         )
-        addMessage(userMessage)
+        uiSessionManager.addMessageToCurrentSession(userMessage)
 
-        // 添加思考中消息
+        // 添加思考中提示
         val thinkingMessage = ChatMessage(
             content = "正在思考...",
             isUser = false,
             status = MessageStatus.SENDING
         )
-        addMessage(thinkingMessage)
+        uiSessionManager.addMessageToCurrentSession(thinkingMessage)
 
-        // 🎯 使用 MainEntryNew 统一执行 (自动处理 Session 和广播)
-        Log.d(TAG, "🚀 [ViewModel] 调用 MainEntryNew.runWithSession...")
-        com.xiaomo.androidforclaw.core.MainEntryNew.runWithSession(
-            userInput = content,
-            sessionId = "default",
-            application = getApplication()
-        )
-
-        // 移除思考中消息 (定时刷新会自动加载新消息)
+        // 调用 MainEntryNew 执行
         viewModelScope.launch {
-            kotlinx.coroutines.delay(1000)
-            removeMessage(thinkingMessage)
+            val sessionId = currentSession.value.id
+            Log.d(TAG, "🚀 [MainEntryNew] 执行 (会话: $sessionId)...")
+
+            com.xiaomo.androidforclaw.core.MainEntryNew.runWithSession(
+                userInput = content,
+                sessionId = if (isBackendSession(sessionId)) sessionId else "default",
+                application = getApplication()
+            )
+
+            // 等待一小段时间后移除思考中消息
+            delay(500)
+            uiSessionManager.removeMessageFromCurrentSession(thinkingMessage.id)
         }
-    }
 
-    /**
-     * 添加消息到当前会话
-     */
-    private fun addMessage(message: ChatMessage) {
-        uiSessionManager.addMessageToCurrentSession(message)
-
-        // 如果是用户消息且当前会话标题还是默认的，自动生成标题
-        if (message.isUser && currentSession.value.title == "新对话") {
+        // 自动生成会话标题
+        if (currentSession.value.title == "新对话") {
             uiSessionManager.autoGenerateCurrentSessionTitle()
         }
     }
 
-    /**
-     * 从当前会话移除消息
-     */
-    private fun removeMessage(message: ChatMessage) {
-        uiSessionManager.removeMessageFromCurrentSession(message.id)
-    }
-
     // === Session Management ===
 
-    /**
-     * 创建新会话
-     */
     fun createNewSession() {
         uiSessionManager.createSession()
+        // 新会话自动初始化同步状态为0
     }
 
-    /**
-     * 切换会话
-     */
     fun switchSession(sessionId: String) {
+        Log.d(TAG, "🔀 [切换会话] $sessionId")
         uiSessionManager.switchSession(sessionId)
-
-        // 🔄 切换会话后重新加载消息
-        Log.d(TAG, "🔄 [ViewModel] 切换会话，重新加载消息...")
-        loadSessionHistory()
+        // 切换会话时立即同步
+        viewModelScope.launch {
+            syncFromBackend()
+        }
     }
 
-    /**
-     * 删除会话
-     */
     fun deleteSession(sessionId: String) {
         uiSessionManager.deleteSession(sessionId)
+        // 清理同步状态
+        sessionSyncState.remove(sessionId)
+
+        // 清理后端 session
+        val agentSessionManager = com.xiaomo.androidforclaw.core.MainEntryNew.getSessionManager()
+        agentSessionManager?.clear(sessionId)
     }
 
-    /**
-     * 清空当前会话
-     */
     fun clearCurrentSession() {
+        val sessionId = currentSession.value.id
+        Log.d(TAG, "🗑️ [清空会话] $sessionId")
+
         uiSessionManager.clearCurrentSession()
-        // 同时清空 Agent 的 Session
+
+        // 同时清空 Agent Session
         val agentSessionManager = com.xiaomo.androidforclaw.core.MainEntryNew.getSessionManager()
-        agentSessionManager?.clear("default")
+        agentSessionManager?.clear(if (isBackendSession(sessionId)) sessionId else sessionId)
+
+        // 重置同步状态
+        sessionSyncState[sessionId] = 0
     }
 }

@@ -41,16 +41,16 @@
 
 1. **Download APK**
    ```
-   androidforclaw-v2.4.3-debug.apk          (Main app, ~40MB)
-   S4Claw-v1.0.0.apk                        (Screen4Claw: Accessibility & Screenshot, ~5MB)
+   app-release.apk                          (Main app, ~31MB)
+   observer-release.apk                     (S4Claw: Accessibility & Screenshot, ~4.3MB)
    B4Claw-v1.0.0.apk                        (Browser4Claw: Browser for AI, Optional)
    ```
 
 2. **Install**
    ```bash
-   adb install releases/androidforclaw-v2.4.3-debug.apk
-   adb install releases/S4Claw-v1.0.0.apk
-   adb install releases/B4Claw-v1.0.0.apk  # Optional
+   adb install app-release.apk
+   adb install observer-release.apk
+   adb install B4Claw-v1.0.0.apk  # Optional
    ```
 
 3. **Configure API**

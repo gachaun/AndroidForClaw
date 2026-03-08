@@ -909,39 +909,76 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
                 Log.i(TAG, "   聊天类型: ${event.chatType}")
                 Log.i(TAG, "   Mentions: ${event.mentions}")
 
-                // ✅ 检查是否需要 @ 机器人 (对齐 OpenClaw bot.ts checkBotMentioned)
-                if (event.chatType == "group") {
-                    try {
-                        val configLoader = ConfigLoader(this@MyApplication)
-                        val openClawConfig = configLoader.loadOpenClawConfig()
-                        val feishuConfig = openClawConfig.gateway.feishu
+                // ✅ 检查消息权限 (对齐 OpenClaw bot.ts)
+                try {
+                    val configLoader = ConfigLoader(this@MyApplication)
+                    val openClawConfig = configLoader.loadOpenClawConfig()
+                    val feishuConfig = openClawConfig.gateway.feishu
 
-                        val requireMention = feishuConfig.requireMention
-                        Log.d(TAG, "   requireMention: $requireMention")
+                    // 检查 DM Policy（私聊权限）
+                    if (event.chatType == "p2p") {
+                        val dmPolicy = feishuConfig.dmPolicy
+                        Log.d(TAG, "   DM Policy: $dmPolicy")
 
-                        if (requireMention) {
-                            // 检查 @_all (对齐 OpenClaw: 视为 @ 所有机器人)
-                            if (event.content.contains("@_all")) {
-                                Log.d(TAG, "✅ 消息包含 @_all")
-                            } else if (event.mentions.isEmpty()) {
-                                // 没有任何 @mention
-                                Log.d(TAG, "❌ 群消息需要 @机器人，但没有任何 @mention，忽略此消息")
-                                return
-                            } else {
-                                // 有 @mention，但我们需要检查是否 @了机器人
-                                // 暂时简化：如果有任何 @mention 就处理 (之后可以优化为检查具体的 bot open_id)
-                                val botOpenId = feishuChannel?.getBotOpenId()
-                                if (botOpenId != null && botOpenId !in event.mentions) {
-                                    Log.d(TAG, "❌ 群消息 @了其他人但没有 @机器人(${botOpenId})，忽略此消息")
-                                    Log.d(TAG, "   Mentions: ${event.mentions}")
+                        when (dmPolicy) {
+                            "pairing" -> {
+                                // TODO: 实现配对逻辑
+                                // 暂时允许所有私聊（开发模式）
+                                Log.d(TAG, "✅ DM allowed (pairing mode - 暂未实现配对验证)")
+                            }
+                            "allowlist" -> {
+                                // 检查白名单
+                                val allowFrom = feishuConfig.allowFrom
+                                if (allowFrom.isEmpty() || event.senderId !in allowFrom) {
+                                    Log.d(TAG, "❌ DM from ${event.senderId} not in allowlist, ignoring")
                                     return
                                 }
+                                Log.d(TAG, "✅ DM allowed (sender in allowlist)")
+                            }
+                            "open" -> {
+                                Log.d(TAG, "✅ DM allowed (open policy)")
+                            }
+                            else -> {
+                                Log.w(TAG, "⚠️ Unknown DM policy: $dmPolicy, defaulting to open")
+                            }
+                        }
+                    }
+
+                    // 检查群组消息（必须 @ 机器人）
+                    if (event.chatType == "group") {
+                        // 始终要求群消息 @ 机器人 (忽略配置中的 requireMention)
+                        val requireMention = true
+                        Log.d(TAG, "   requireMention: $requireMention (群消息强制要求 @)")
+
+                        // 检查 @_all (对齐 OpenClaw: 视为 @ 所有机器人)
+                        if (event.content.contains("@_all")) {
+                            Log.d(TAG, "✅ 消息包含 @_all")
+                        } else if (event.mentions.isEmpty()) {
+                            // 没有任何 @mention
+                            Log.d(TAG, "❌ 群消息需要 @机器人，但没有任何 @mention，忽略此消息")
+                            return
+                        } else {
+                            // 有 @mention，检查是否 @了机器人
+                            val botOpenId = feishuChannel?.getBotOpenId()
+                            if (botOpenId == null) {
+                                // 无法获取 bot open_id，只要有 @mention 就通过
+                                Log.w(TAG, "⚠️ 无法获取 bot open_id，任何 @mention 都会被处理")
+                                Log.d(TAG, "✅ 消息包含 @mention（无法验证是否 @机器人）")
+                            } else if (botOpenId !in event.mentions) {
+                                // 有 bot open_id，但消息没有 @机器人
+                                Log.d(TAG, "❌ 群消息 @了其他人但没有 @机器人(${botOpenId})，忽略此消息")
+                                Log.d(TAG, "   Bot Open ID: $botOpenId")
+                                Log.d(TAG, "   Mentions: ${event.mentions}")
+                                return
+                            } else {
                                 Log.d(TAG, "✅ 群消息包含机器人的 @mention")
                             }
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "检查 requireMention 失败", e)
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "检查消息权限失败", e)
+                    // 出错时安全起见,忽略消息
+                    return
                 }
 
                 // 🔑 生成队列 key（对齐 OpenClaw）

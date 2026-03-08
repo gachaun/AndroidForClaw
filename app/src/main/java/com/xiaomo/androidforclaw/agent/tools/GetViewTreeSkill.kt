@@ -21,20 +21,11 @@ class GetViewTreeSkill(private val context: Context) : Skill {
     }
 
     override val name = "get_view_tree"
-    override val description: String
-        get() {
-            val isAccessibilityEnabled = AccessibilityProxy.isConnected.value == true && AccessibilityProxy.isServiceReady()
-            val isAvailable = isAccessibilityEnabled
-            val statusNote = if (!isAvailable) {
-                "\n\n⚠️ **当前状态：不可用** - 无障碍服务未启用"
-            } else {
-                "\n\n✅ **当前状态：可用**"
-            }
-
-            return """
+    override val description = """
         获取当前屏幕的 UI 树信息（已优化处理，去除重复和无用节点）。
 
         **优先使用此工具**来理解界面结构和查找可交互元素。
+
         特点：
         - 轻量、快速（无需截图）
         - 返回清理后的 UI 元素列表
@@ -43,9 +34,8 @@ class GetViewTreeSkill(private val context: Context) : Skill {
         只有在以下情况才使用 screenshot：
         - 需要查看颜色、图标等视觉信息
         - UI 树信息不足以完成任务
-        - 操作失败需要视觉确认$statusNote
+        - 操作失败需要视觉确认
     """.trimIndent()
-        }
 
     override fun getToolDefinition(): ToolDefinition {
         return ToolDefinition(

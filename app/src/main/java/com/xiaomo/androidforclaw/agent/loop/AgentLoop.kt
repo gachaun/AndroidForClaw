@@ -19,6 +19,10 @@ import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Agent Loop - 核心循环引擎
@@ -51,6 +55,12 @@ class AgentLoop(
 
     private val gson = Gson()
 
+    // 日志文件配置
+    private val logDir = File("/sdcard/.androidforclaw/workspace/logs")
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
+    private var sessionLogFile: File? = null
+    private val logBuffer = StringBuilder()
+
     // ✅ 缓存 Tool Definitions，避免每次迭代重复构建
     // 合并通用工具和 Android 平台工具
     private val allToolDefinitions by lazy {
@@ -67,6 +77,79 @@ class AgentLoop(
     // 停止标志
     @Volatile
     private var shouldStop = false
+
+    /**
+     * 写入日志到文件和缓冲区
+     */
+    private fun writeLog(message: String) {
+        val timestamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.US).format(Date())
+        val logLine = "[$timestamp] $message"
+
+        // 添加到缓冲区
+        logBuffer.appendLine(logLine)
+
+        // 写入到文件（如果文件已创建）
+        sessionLogFile?.let { file ->
+            try {
+                file.appendText(logLine + "\n")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to write log to file", e)
+            }
+        }
+
+        // 同时输出到 logcat
+        Log.d(TAG, message)
+    }
+
+    /**
+     * 初始化会话日志文件
+     */
+    private fun initSessionLog(userMessage: String) {
+        try {
+            // 确保日志目录存在
+            logDir.mkdirs()
+
+            // 创建日志文件（使用时间戳 + 用户消息前缀作为文件名）
+            val timestamp = dateFormat.format(Date())
+            val messagePrefix = userMessage.take(20).replace(Regex("[^a-zA-Z0-9\\u4e00-\\u9fa5]"), "_")
+            val filename = "agentloop_${timestamp}_${messagePrefix}.log"
+            sessionLogFile = File(logDir, filename)
+
+            // 清空缓冲区
+            logBuffer.clear()
+
+            // 写入会话头部
+            sessionLogFile?.writeText("========== Agent Loop Session ==========\n")
+            sessionLogFile?.appendText("Start time: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())}\n")
+            sessionLogFile?.appendText("User message: $userMessage\n")
+            sessionLogFile?.appendText("========================================\n\n")
+
+            Log.i(TAG, "📝 Session log initialized: ${sessionLogFile?.absolutePath}")
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to initialize session log (will continue without file logging): ${e.message}")
+            sessionLogFile = null  // 禁用文件日志，但继续执行
+        }
+    }
+
+    /**
+     * 完成会话日志
+     */
+    private fun finalizeSessionLog(result: AgentResult) {
+        sessionLogFile?.let { file ->
+            try {
+                file.appendText("\n========================================\n")
+                file.appendText("End time: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())}\n")
+                file.appendText("Total iterations: ${result.iterations}\n")
+                file.appendText("Tools used: ${result.toolsUsed.joinToString(", ")}\n")
+                file.appendText("Final content length: ${result.finalContent.length} chars\n")
+                file.appendText("========================================\n")
+
+                Log.i(TAG, "✅ Session log saved: ${file.absolutePath} (${file.length()} bytes)")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to finalize session log", e)
+            }
+        }
+    }
 
     /**
      * 运行 Agent Loop
@@ -86,31 +169,34 @@ class AgentLoop(
         shouldStop = false
         val messages = mutableListOf<Message>()
 
+        // 初始化会话日志
+        initSessionLog(userMessage)
+
         // 重置上下文管理器
         contextManager?.reset()
 
-        Log.d(TAG, "========== Agent Loop 开始 ==========")
-        Log.d(TAG, "Max iterations: $maxIterations")
-        Log.d(TAG, "Model: ${modelRef ?: "default"}")
-        Log.d(TAG, "Reasoning: ${if (reasoningEnabled) "enabled" else "disabled"}")
-        Log.d(TAG, "🔧 Universal tools: ${toolRegistry.getToolCount()}")
-        Log.d(TAG, "📱 Android tools: ${androidToolRegistry.getToolCount()}")
-        Log.d(TAG, "🔄 Context manager: ${if (contextManager != null) "enabled" else "disabled"}")
+        writeLog("========== Agent Loop 开始 ==========")
+        writeLog("Max iterations: $maxIterations")
+        writeLog("Model: ${modelRef ?: "default"}")
+        writeLog("Reasoning: ${if (reasoningEnabled) "enabled" else "disabled"}")
+        writeLog("🔧 Universal tools: ${toolRegistry.getToolCount()}")
+        writeLog("📱 Android tools: ${androidToolRegistry.getToolCount()}")
+        writeLog("🔄 Context manager: ${if (contextManager != null) "enabled" else "disabled"}")
 
         // 1. 添加系统提示词
         messages.add(systemMessage(systemPrompt))
-        Log.d(TAG, "✅ System prompt added (${systemPrompt.length} chars)")
+        writeLog("✅ System prompt added (${systemPrompt.length} chars)")
 
         // 2. 添加历史对话
         messages.addAll(contextHistory)
         if (contextHistory.isNotEmpty()) {
-            Log.d(TAG, "✅ Context history added: ${contextHistory.size} messages")
+            writeLog("✅ Context history added: ${contextHistory.size} messages")
         }
 
         // 3. 添加用户消息
         messages.add(userMessage(userMessage))
-        Log.d(TAG, "✅ User message: $userMessage")
-        Log.d(TAG, "📤 准备发送第一次 LLM 请求...")
+        writeLog("✅ User message: $userMessage")
+        writeLog("📤 准备发送第一次 LLM 请求...")
 
         var iteration = 0
         var finalContent: String? = null
@@ -120,16 +206,16 @@ class AgentLoop(
         while (iteration < maxIterations && !shouldStop) {
             iteration++
             val iterationStartTime = System.currentTimeMillis()
-            Log.d(TAG, "========== Iteration $iteration ==========")
+            writeLog("========== Iteration $iteration ==========")
 
             try {
                 // 4.1 调用 LLM
-                Log.d(TAG, "📢 发送迭代进度更新...")
+                writeLog("📢 发送迭代进度更新...")
                 _progressFlow.emit(ProgressUpdate.Iteration(iteration))
-                Log.d(TAG, "✅ 迭代进度已发送")
+                writeLog("✅ 迭代进度已发送")
 
-                Log.d(TAG, "📤 调用 UnifiedLLMProvider.chatWithTools...")
-                Log.d(TAG, "   Messages: ${messages.size}, Tools+Skills: ${allToolDefinitions.size}")
+                writeLog("📤 调用 UnifiedLLMProvider.chatWithTools...")
+                writeLog("   Messages: ${messages.size}, Tools+Skills: ${allToolDefinitions.size}")
 
                 val llmStartTime = System.currentTimeMillis()
                 val response = llmProvider.chatWithTools(
@@ -140,17 +226,18 @@ class AgentLoop(
                 )
                 val llmDuration = System.currentTimeMillis() - llmStartTime
 
-                Log.d(TAG, "✅ LLM 响应已收到 [耗时: ${llmDuration}ms]")
+                writeLog("✅ LLM 响应已收到 [耗时: ${llmDuration}ms]")
 
                 // 4.2 显示 reasoning 思考过程
                 response.thinkingContent?.let { reasoning ->
-                    Log.d(TAG, "🧠 Reasoning (${reasoning.length} chars)")
+                    writeLog("🧠 Reasoning (${reasoning.length} chars):")
+                    writeLog("   ${reasoning.take(500)}${if (reasoning.length > 500) "..." else ""}")
                     _progressFlow.emit(ProgressUpdate.Reasoning(reasoning, llmDuration))
                 }
 
                 // 4.3 检查是否有 function calls
                 if (response.toolCalls != null && response.toolCalls.isNotEmpty()) {
-                    Log.d(TAG, "Function calls: ${response.toolCalls.size}")
+                    writeLog("Function calls: ${response.toolCalls.size}")
 
                     // 添加 assistant 消息（包含 function calls）
                     messages.add(
@@ -172,14 +259,15 @@ class AgentLoop(
                         val functionName = toolCall.name
                         val argsJson = toolCall.arguments
 
-                        Log.d(TAG, "🔧 Function: $functionName")
-                        Log.d(TAG, "   Args: $argsJson")
+                        writeLog("🔧 Function: $functionName")
+                        writeLog("   Args: $argsJson")
 
                         // 解析参数
                         val args = try {
                             @Suppress("UNCHECKED_CAST")
                             gson.fromJson(argsJson, Map::class.java) as Map<String, Any?>
                         } catch (e: Exception) {
+                            writeLog("Failed to parse arguments: ${e.message}")
                             Log.e(TAG, "Failed to parse arguments", e)
                             mapOf<String, Any?>()
                         }
@@ -192,20 +280,21 @@ class AgentLoop(
                         // ✅ 先从通用工具查找，再从 Android 工具查找
                         val execStartTime = System.currentTimeMillis()
                         val result = if (toolRegistry.contains(functionName)) {
-                            Log.d(TAG, "   → Universal tool")
+                            writeLog("   → Universal tool")
                             toolRegistry.execute(functionName, args)
                         } else if (androidToolRegistry.contains(functionName)) {
-                            Log.d(TAG, "   → Android tool")
+                            writeLog("   → Android tool")
                             androidToolRegistry.execute(functionName, args)
                         } else {
+                            writeLog("   ❌ Unknown function: $functionName")
                             Log.e(TAG, "   ❌ Unknown function: $functionName")
                             SkillResult.error("Unknown function: $functionName")
                         }
                         val execDuration = System.currentTimeMillis() - execStartTime
                         totalExecDuration += execDuration
 
-                        Log.d(TAG, "   Result: ${result.success}, ${result.content.take(200)}")
-                        Log.d(TAG, "   ⏱️ 执行耗时: ${execDuration}ms")
+                        writeLog("   Result: ${result.success}, ${result.content.take(200)}")
+                        writeLog("   ⏱️ 执行耗时: ${execDuration}ms")
 
                         // 添加结果到消息列表
                         messages.add(
@@ -226,7 +315,7 @@ class AgentLoop(
                             if (stopped) {
                                 shouldStop = true
                                 finalContent = result.content
-                                Log.d(TAG, "Stop function called, ending loop")
+                                writeLog("Stop function called, ending loop")
                                 break
                             }
                         }
@@ -236,7 +325,7 @@ class AgentLoop(
                     if (shouldStop) break
 
                     val iterationDuration = System.currentTimeMillis() - iterationStartTime
-                    Log.d(TAG, "⏱️ 本轮迭代总耗时: ${iterationDuration}ms (LLM: ${llmDuration}ms, 执行: ${totalExecDuration}ms)")
+                    writeLog("⏱️ 本轮迭代总耗时: ${iterationDuration}ms (LLM: ${llmDuration}ms, 执行: ${totalExecDuration}ms)")
 
                     // 发送迭代完成事件（带时间统计）
                     _progressFlow.emit(ProgressUpdate.IterationComplete(iteration, iterationDuration, llmDuration, totalExecDuration))
@@ -247,10 +336,12 @@ class AgentLoop(
                 finalContent = response.content
                 messages.add(assistantMessage(content = finalContent))
 
-                Log.d(TAG, "Final content received (finish_reason: ${response.finishReason})")
+                writeLog("Final content received (finish_reason: ${response.finishReason})")
+                writeLog("Content: ${finalContent?.take(500)}${if ((finalContent?.length ?: 0) > 500) "..." else ""}")
                 break
 
             } catch (e: Exception) {
+                writeLog("Iteration $iteration error: ${e.message}")
                 Log.e(TAG, "Iteration $iteration error", e)
                 LayoutExceptionLogger.log("AgentLoop#run#iteration$iteration", e)
 
@@ -259,6 +350,7 @@ class AgentLoop(
                 val isContextOverflow = ContextErrors.isLikelyContextOverflowError(errorMessage)
 
                 if (isContextOverflow && contextManager != null) {
+                    writeLog("🔄 检测到上下文超限，尝试恢复...")
                     Log.w(TAG, "🔄 检测到上下文超限，尝试恢复...")
                     _progressFlow.emit(ProgressUpdate.ContextOverflow("Context overflow detected, attempting recovery..."))
 
@@ -270,6 +362,7 @@ class AgentLoop(
 
                     when (recoveryResult) {
                         is ContextRecoveryResult.Recovered -> {
+                            writeLog("✅ 上下文恢复成功: ${recoveryResult.strategy} (attempt ${recoveryResult.attempt})")
                             Log.d(TAG, "✅ 上下文恢复成功: ${recoveryResult.strategy} (attempt ${recoveryResult.attempt})")
                             _progressFlow.emit(ProgressUpdate.ContextRecovered(
                                 strategy = recoveryResult.strategy,
@@ -284,6 +377,7 @@ class AgentLoop(
                             continue
                         }
                         is ContextRecoveryResult.CannotRecover -> {
+                            writeLog("❌ 上下文恢复失败: ${recoveryResult.reason}")
                             Log.e(TAG, "❌ 上下文恢复失败: ${recoveryResult.reason}")
                             _progressFlow.emit(ProgressUpdate.Error("Context overflow: ${recoveryResult.reason}"))
 
@@ -298,6 +392,7 @@ class AgentLoop(
                     // 尝试继续或停止
                     if (e.message?.contains("timeout", ignoreCase = true) == true) {
                         // 超时错误，可以重试
+                        writeLog("Timeout error, retrying...")
                         continue
                     } else {
                         // 其他错误，停止循环
@@ -310,21 +405,27 @@ class AgentLoop(
 
         // 5. 处理循环结束
         if (finalContent == null && iteration >= maxIterations) {
+            writeLog("Max iterations ($maxIterations) reached")
             Log.w(TAG, "Max iterations ($maxIterations) reached")
             finalContent = "达到最大迭代次数 ($maxIterations)，任务未完成。" +
                     "建议将任务拆分为更小的步骤。"
         }
 
-        Log.d(TAG, "========== Agent Loop 结束 ==========")
-        Log.d(TAG, "Iterations: $iteration")
-        Log.d(TAG, "Tools used: ${toolsUsed.joinToString(", ")}")
+        writeLog("========== Agent Loop 结束 ==========")
+        writeLog("Iterations: $iteration")
+        writeLog("Tools used: ${toolsUsed.joinToString(", ")}")
 
-        return AgentResult(
+        val result = AgentResult(
             finalContent = finalContent ?: "无响应",
             toolsUsed = toolsUsed,
             messages = messages,
             iterations = iteration
         )
+
+        // 完成会话日志
+        finalizeSessionLog(result)
+
+        return result
     }
 
     /**

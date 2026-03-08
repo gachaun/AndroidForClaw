@@ -28,7 +28,18 @@ class ForegroundService : Service() {
         super.onCreate()
         Log.i(TAG, "ForegroundService onCreate")
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification())
+
+        // Android 14+ 需要明确指定 foregroundServiceType
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(
+                NOTIFICATION_ID,
+                createNotification(),
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification())
+        }
+        Log.i(TAG, "ForegroundService started with mediaProjection type")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

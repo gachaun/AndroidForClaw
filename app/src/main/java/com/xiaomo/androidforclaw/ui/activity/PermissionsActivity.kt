@@ -146,38 +146,22 @@ class PermissionsActivity : AppCompatActivity() {
     private suspend fun updateAccessibilityStatus() {
         val isConnected = AccessibilityProxy.isConnected.value == true
         val isReady = AccessibilityProxy.isServiceReadyAsync()
-        val statusText = when {
-            isConnected && isReady -> "✅ 已连接并就绪"
-            isConnected -> "⚠️ 已连接但未就绪"
-            else -> "❌ 未连接"
-        }
 
         binding.apply {
-            // 只在状态真正改变时更新 UI，避免闪烁
-            val currentStatus = tvAccessibilityStatus.text.toString()
+            // 隐藏状态标签
+            tvAccessibilityStatus.visibility = android.view.View.GONE
 
-            if (currentStatus != statusText) {
-                tvAccessibilityStatus.text = statusText
-
-                if (isConnected && isReady) {
-                    tvAccessibilityStatus.setTextColor(getColor(R.color.status_ok))
-                    btnAccessibility.isEnabled = false
-                    btnAccessibility.text = "已连接"
-                    android.util.Log.d(TAG, "无障碍服务状态变更: 已连接并就绪")
-                } else {
-                    tvAccessibilityStatus.setTextColor(getColor(R.color.status_error))
-                    btnAccessibility.isEnabled = true
-                    btnAccessibility.text = "检查服务"
-                    android.util.Log.d(TAG, "无障碍服务状态变更: 未授权")
-                }
+            if (isConnected && isReady) {
+                btnAccessibility.isEnabled = false
+                btnAccessibility.text = "已连接"
+                android.util.Log.d(TAG, "无障碍服务状态变更: 已连接并就绪")
+            } else {
+                btnAccessibility.isEnabled = true
+                btnAccessibility.text = "检查服务"
+                android.util.Log.d(TAG, "无障碍服务状态变更: 未授权")
             }
 
-            tvAccessibilityDesc.text = """
-                用于：点击、滑动、输入文本、获取界面信息
-
-                状态详情：
-                $statusText
-            """.trimIndent()
+            tvAccessibilityDesc.text = "用于：点击、滑动、输入文本、获取界面信息"
         }
     }
 
@@ -188,23 +172,17 @@ class PermissionsActivity : AppCompatActivity() {
         val isGranted = Settings.canDrawOverlays(this)
 
         binding.apply {
-            val currentStatus = tvOverlayStatus.text.toString()
-            val newStatus = if (isGranted) "✅ 已授权" else "❌ 未授权"
+            // 隐藏状态标签
+            tvOverlayStatus.visibility = android.view.View.GONE
 
-            if (currentStatus != newStatus) {
-                if (isGranted) {
-                    tvOverlayStatus.text = "✅ 已授权"
-                    tvOverlayStatus.setTextColor(getColor(R.color.status_ok))
-                    btnOverlay.isEnabled = false
-                    btnOverlay.text = "已授权"
-                    android.util.Log.d(TAG, "悬浮窗权限状态变更: 已授权")
-                } else {
-                    tvOverlayStatus.text = "❌ 未授权"
-                    tvOverlayStatus.setTextColor(getColor(R.color.status_error))
-                    btnOverlay.isEnabled = true
-                    btnOverlay.text = "去授权"
-                    android.util.Log.d(TAG, "悬浮窗权限状态变更: 未授权")
-                }
+            if (isGranted) {
+                btnOverlay.isEnabled = false
+                btnOverlay.text = "已授权"
+                android.util.Log.d(TAG, "悬浮窗权限状态变更: 已授权")
+            } else {
+                btnOverlay.isEnabled = true
+                btnOverlay.text = "去授权"
+                android.util.Log.d(TAG, "悬浮窗权限状态变更: 未授权")
             }
 
             tvOverlayDesc.text = "用于：显示 Agent 执行状态悬浮窗"
@@ -216,33 +194,22 @@ class PermissionsActivity : AppCompatActivity() {
      */
     private fun updateScreenCaptureStatus() {
         val isGranted = AccessibilityProxy.isMediaProjectionGranted()
-        val statusText = AccessibilityProxy.getMediaProjectionStatus()
 
         binding.apply {
-            val currentStatus = tvScreenCaptureStatus.text.toString()
-            val newStatus = if (isGranted) "✅ 已授权" else "❌ 未授权"
+            // 隐藏状态标签
+            tvScreenCaptureStatus.visibility = android.view.View.GONE
 
-            if (currentStatus != newStatus) {
-                if (isGranted) {
-                    tvScreenCaptureStatus.text = "✅ 已授权"
-                    tvScreenCaptureStatus.setTextColor(getColor(R.color.status_ok))
-                    btnScreenCapture.isEnabled = false
-                    btnScreenCapture.text = "已授权"
-                    android.util.Log.d(TAG, "录屏权限状态变更: 已授权")
-                } else {
-                    tvScreenCaptureStatus.text = "❌ 未授权"
-                    tvScreenCaptureStatus.setTextColor(getColor(R.color.status_error))
-                    btnScreenCapture.isEnabled = true
-                    btnScreenCapture.text = "去授权"
-                    android.util.Log.d(TAG, "录屏权限状态变更: 未授权")
-                }
+            if (isGranted) {
+                btnScreenCapture.isEnabled = false
+                btnScreenCapture.text = "已授权"
+                android.util.Log.d(TAG, "录屏权限状态变更: 已授权")
+            } else {
+                btnScreenCapture.isEnabled = true
+                btnScreenCapture.text = "去授权"
+                android.util.Log.d(TAG, "录屏权限状态变更: 未授权")
             }
 
-            tvScreenCaptureDesc.text = """
-                用于：截图观察界面、分析 UI 元素
-
-                状态详情：$statusText
-            """.trimIndent()
+            tvScreenCaptureDesc.text = "用于：截图观察界面、分析 UI 元素"
         }
     }
 

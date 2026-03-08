@@ -96,7 +96,7 @@ android {
                 appName: "@string/app_name",
                 buildType: "debug"
             ]
-            applicationIdSuffix ".debug"
+            // 移除 applicationIdSuffix，debug 和 release 使用相同包名
         }
     }
     compileOptions {

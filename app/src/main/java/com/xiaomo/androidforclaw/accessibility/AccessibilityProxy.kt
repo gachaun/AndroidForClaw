@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.delay
 
 object AccessibilityProxy {
     private const val TAG = "AccessibilityProxy"
@@ -123,7 +124,7 @@ object AccessibilityProxy {
         }
 
         // Fetch new data
-        ensureConnected()
+        ensureConnectedWithRetry()
         val parcelables = try {
             service?.dumpViewTree() ?: emptyList()
         } catch (e: RemoteException) {
@@ -159,7 +160,7 @@ object AccessibilityProxy {
     }
 
     suspend fun tap(x: Int, y: Int): Boolean = withContext(Dispatchers.IO) {
-        ensureConnected()
+        ensureConnectedWithRetry()
         try {
             service?.performTap(x, y) ?: false
         } catch (e: RemoteException) {
@@ -170,7 +171,7 @@ object AccessibilityProxy {
     }
 
     suspend fun longPress(x: Int, y: Int): Boolean = withContext(Dispatchers.IO) {
-        ensureConnected()
+        ensureConnectedWithRetry()
         try {
             service?.performLongPress(x, y) ?: false
         } catch (e: RemoteException) {
@@ -185,7 +186,7 @@ object AccessibilityProxy {
         endX: Int, endY: Int,
         durationMs: Long = 300
     ): Boolean = withContext(Dispatchers.IO) {
-        ensureConnected()
+        ensureConnectedWithRetry()
         try {
             service?.performSwipe(startX, startY, endX, endY, durationMs) ?: false
         } catch (e: RemoteException) {
@@ -345,7 +346,7 @@ object AccessibilityProxy {
     }
 
     suspend fun captureScreen(): String = withContext(Dispatchers.IO) {
-        ensureConnected()
+        ensureConnectedWithRetry()
         try {
             service?.captureScreen() ?: ""
         } catch (e: RemoteException) {
@@ -355,8 +356,45 @@ object AccessibilityProxy {
         }
     }
 
+    /**
+     * 确保服务已连接，如果未连接则尝试重连（带重试）
+     */
+    private suspend fun ensureConnectedWithRetry() {
+        if (service != null) return
+
+        Log.w(TAG, "Service not connected, attempting to bind...")
+
+        // 尝试重连3次
+        repeat(3) { attempt ->
+            bindService(context)
+
+            // 等待连接建立
+            withTimeoutOrNull(1000L) {
+                while (service == null) {
+                    delay(100)
+                }
+            }
+
+            if (service != null) {
+                Log.d(TAG, "✅ Service reconnected on attempt ${attempt + 1}")
+                return
+            }
+
+            Log.w(TAG, "❌ Reconnect attempt ${attempt + 1} failed")
+            delay(500)
+        }
+
+        throw IllegalStateException("Accessibility service not connected after 3 retry attempts")
+    }
+
     fun getMediaProjectionStatus(): String {
         return try {
+            // 先确保服务已连接
+            if (service == null) {
+                bindService(context)
+                Thread.sleep(300)  // 等待连接建立
+            }
+
             // 使用 runBlocking 但设置超时
             runBlocking {
                 withTimeoutOrNull(500L) {  // 500ms 超时

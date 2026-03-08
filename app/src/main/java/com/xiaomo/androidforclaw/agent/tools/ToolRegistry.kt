@@ -37,7 +37,8 @@ class ToolRegistry(
      * 注册通用 tools（跨平台能力）
      */
     private fun registerDefaultTools() {
-        val workspace = File(context.filesDir, "workspace")
+        // 使用外部存储的工作空间 (对齐 OpenClaw ~/.openclaw/workspace/)
+        val workspace = File("/sdcard/.androidforclaw/workspace")
         workspace.mkdirs()
 
         // === 文件系统工具 (来自 Pi Coding Agent) ===
