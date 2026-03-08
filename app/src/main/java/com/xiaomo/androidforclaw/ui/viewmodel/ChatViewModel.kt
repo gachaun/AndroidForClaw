@@ -72,11 +72,27 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 // 🔄 加载所有后端 sessions（飞书、Discord、WebSocket）
                 uiSessionManager.loadSessionsFromBackend()
 
+                // ⚠️ 重要：只显示当前活动会话的消息
+                val currentSessionId = currentSession.value.id
+                Log.d(TAG, "📌 [ViewModel] 当前会话ID: $currentSessionId")
+
+                // 如果当前会话是 UI 创建的新会话，从 agent session "default" 加载
+                // 如果是后端会话（飞书/Discord），则已经在 loadSessionsFromBackend 中加载了
+                if (currentSessionId.startsWith("discord_") ||
+                    currentSessionId.contains("_p2p") ||
+                    currentSessionId.contains("_group") ||
+                    currentSessionId.startsWith("session_")) {
+                    // 后端会话，消息已经在 currentSession.messages 中
+                    Log.d(TAG, "✅ [ViewModel] 使用后端会话消息: ${currentSession.value.messages.size} 条")
+                    return@launch
+                }
+
+                // UI 本地会话，从 agent session "default" 加载
                 val agentSessionManager = com.xiaomo.androidforclaw.core.MainEntryNew.getSessionManager()
                 val agentSession = agentSessionManager?.get("default")
 
                 if (agentSession != null && agentSession.messageCount() > 0) {
-                    Log.d(TAG, "✅ [ViewModel] 找到历史消息: ${agentSession.messageCount()} 条")
+                    Log.d(TAG, "✅ [ViewModel] 找到默认会话历史消息: ${agentSession.messageCount()} 条")
 
                     // 转换为 UI 的 ChatMessage
                     val chatMessages = mutableListOf<ChatMessage>()
@@ -203,6 +219,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun switchSession(sessionId: String) {
         uiSessionManager.switchSession(sessionId)
+
+        // 🔄 切换会话后重新加载消息
+        Log.d(TAG, "🔄 [ViewModel] 切换会话，重新加载消息...")
+        loadSessionHistory()
     }
 
     /**
