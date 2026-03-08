@@ -23,8 +23,8 @@ class ConfigLoader(private val context: Context) {
     companion object {
         private const val TAG = "ConfigLoader"
 
-        // 配置文件路径
-        private const val CONFIG_DIR = "/sdcard/AndroidForClaw/config"
+        // 配置文件路径 (对齐 OpenClaw: ~/.openclaw/)
+        private const val CONFIG_DIR = "/sdcard/.androidforclaw/config"
         private const val OPENCLAW_CONFIG_FILE = "openclaw.json"
 
 
@@ -104,8 +104,8 @@ class ConfigLoader(private val context: Context) {
           },
           "skills": {
             "bundledPath": "assets/skills",
-            "workspacePath": "/sdcard/AndroidForClaw/workspace/skills",
-            "managedPath": "/sdcard/AndroidForClaw/.skills",
+            "workspacePath": "/sdcard/.androidforclaw/workspace/skills",
+            "managedPath": "/sdcard/.androidforclaw/skills",
             "autoLoad": ["mobile-operations"],
             "disabled": [],
             "onDemand": true,
@@ -204,7 +204,7 @@ class ConfigLoader(private val context: Context) {
           "logging": {
             "level": "INFO",
             "logToFile": true,
-            "logPath": "/sdcard/AndroidForClaw/logs",
+            "logPath": "/sdcard/.androidforclaw/logs",
             "maxFileSize": 10485760,
             "maxFiles": 5,
             "includeTimestamp": true,
@@ -213,7 +213,7 @@ class ConfigLoader(private val context: Context) {
           },
           "memory": {
             "enabled": true,
-            "path": "/sdcard/AndroidForClaw/workspace/memory",
+            "path": "/sdcard/.androidforclaw/workspace/memory",
             "autoSave": true,
             "maxEntries": 1000
           },

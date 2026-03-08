@@ -119,7 +119,7 @@
 
 **Skills 系统** (部分实现)
 - 内置 Skills: `assets/skills/` (随应用打包)
-- 工作区 Skills: `/sdcard/AndroidForClaw/workspace/skills/` (用户自定义)
+- 工作区 Skills: `/sdcard/.androidforclaw/workspace/skills/` (用户自定义,对齐 OpenClaw)
 - AgentSkills.io 兼容格式
 
 **Gateway** (基础已实现,持续完善中)
@@ -137,7 +137,7 @@
 
 **与 OpenClaw 对齐**: AndroidForClaw 使用与 OpenClaw 相同的单配置文件结构
 
-**配置文件**: `/sdcard/AndroidForClaw/config/openclaw.json` (唯一配置文件)
+**配置文件**: `/sdcard/.androidforclaw/config/openclaw.json` (唯一配置文件,对齐 ~/.openclaw/openclaw.json)
 
 包含所有配置:
 - **Agent 配置**: maxIterations, defaultModel, timeout, mode
@@ -171,7 +171,8 @@
   },
   "skills": {
     "bundledPath": "assets://skills/",
-    "workspacePath": "/sdcard/AndroidForClaw/workspace/skills/",
+    "workspacePath": "/sdcard/.androidforclaw/workspace/skills/",
+    "managedPath": "/sdcard/.androidforclaw/skills/",
     "autoLoad": ["mobile-operations"]
   },
   "models": {
@@ -393,36 +394,40 @@ metadata:
 
 ### Skill 位置 (优先级)
 
-**与 OpenClaw 架构对齐**:
+**完全对齐 OpenClaw 架构** (~/.openclaw/):
 
-1. **工作区 Skills** (最高) - `/sdcard/androidforclaw-workspace/skills/`
-   - 用户可编辑技能 (类似 OpenClaw 的 `~/.openclaw/workspace/`)
+1. **工作区 Skills** (最高) - `/sdcard/.androidforclaw/workspace/skills/`
+   - 用户可编辑技能 (对齐 `~/.openclaw/workspace/`)
    - 通过文件管理器可访问
    - 支持热重载
    - 覆盖内置和托管 skills
+   - 可使用 Git 版本控制
 
-2. **托管 Skills** (中等) - `/sdcard/AndroidForClaw/.skills/`
+2. **托管 Skills** (中等) - `/sdcard/.androidforclaw/skills/`
    - 通过包管理器安装 (未来功能)
+   - 对齐 `~/.openclaw/skills/`
    - 覆盖内置 skills
 
 3. **内置 Skills** (最低) - `app/src/main/assets/skills/`
    - 随应用打包
    - 只读
 
-**目录结构**:
+**目录结构** (完全对齐 OpenClaw):
 ```
-/sdcard/androidforclaw-workspace/     ← 用户工作区 (类似 ~/.openclaw/workspace/)
-├── skills/                           ← 用户技能
-│   ├── my-custom-skill/
-│   │   └── SKILL.md
-│   └── wechat-automation/
-│       └── SKILL.md
-└── sessions/                         ← 会话数据 (未来)
-
-/sdcard/AndroidForClaw/               ← 应用数据目录
+/sdcard/.androidforclaw/              ← 主目录 (对齐 ~/.openclaw/)
 ├── config/                           ← 配置文件
-│   ├── openclaw.json                 ← 主配置
-└── .skills/                          ← 托管技能 (未来)
+│   └── openclaw.json                 ← 主配置
+├── workspace/                        ← 用户工作区 (可 Git)
+│   ├── .androidforclaw/              ← 工作区元数据
+│   │   └── workspace-state.json
+│   ├── skills/                       ← 用户自定义 Skills
+│   │   ├── my-custom-skill/
+│   │   │   └── SKILL.md
+│   │   └── wechat-automation/
+│   │       └── SKILL.md
+│   └── memory/                       ← 持久化记忆 (未来)
+├── skills/                           ← 托管 Skills
+└── logs/                             ← 日志文件
 ```
 
 ### 当前实现状态

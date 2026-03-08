@@ -51,8 +51,8 @@ data class SkillDocument(
     /**
      * Skill 来源
      * "bundled" - 内置在 assets/skills/
-     * "managed" - 来自 /sdcard/AndroidForClaw/.skills/
-     * "workspace" - 来自 /sdcard/androidforclaw-workspace/skills/
+     * "managed" - 来自 /sdcard/.androidforclaw/skills/ (对齐 ~/.openclaw/skills/)
+     * "workspace" - 来自 /sdcard/.androidforclaw/workspace/skills/ (对齐 ~/.openclaw/workspace/)
      */
     val source: SkillSource = SkillSource.BUNDLED
 ) {
@@ -102,11 +102,12 @@ data class SkillMetadata(
 
 /**
  * Skill 来源枚举
+ * 对齐 OpenClaw 三层架构
  */
 enum class SkillSource(val displayName: String) {
     BUNDLED("bundled"),      // assets/skills/
-    MANAGED("managed"),      // /sdcard/AndroidForClaw/.skills/
-    WORKSPACE("workspace")   // /sdcard/androidforclaw-workspace/skills/
+    MANAGED("managed"),      // /sdcard/.androidforclaw/skills/ (对齐 ~/.openclaw/skills/)
+    WORKSPACE("workspace")   // /sdcard/.androidforclaw/workspace/skills/ (对齐 ~/.openclaw/workspace/)
 }
 
 /**

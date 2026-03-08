@@ -13,7 +13,7 @@ class SkillsMethods(
     private val context: Context,
     private val skillsLoader: SkillsLoader
 ) {
-    private val workspacePath = "/sdcard/androidforclaw-workspace/skills"
+    private val workspacePath = "/sdcard/.androidforclaw/workspace/skills"
 
     /**
      * skills.status() - Get skills status

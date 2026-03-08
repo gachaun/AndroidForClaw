@@ -16,18 +16,18 @@ import java.io.File
  * 3. Workspace Skills (最高) - /sdcard/androidforclaw-workspace/skills/
  *
  * Workspace 对齐 OpenClaw 架构：
- * - OpenClaw: ~/.openclaw/workspace/skills/
- * - AndroidForClaw: /sdcard/androidforclaw-workspace/skills/
+ * - OpenClaw: ~/.openclaw/workspace/ (Git repo)
+ * - AndroidForClaw: /sdcard/.androidforclaw/workspace/ (可 Git)
  * - 用户可通过文件管理器直接访问和编辑
  */
 class SkillsLoader(private val context: Context) {
     companion object {
         private const val TAG = "SkillsLoader"
 
-        // 三层 Skills 目录
+        // 三层 Skills 目录 (对齐 OpenClaw 架构)
         private const val BUNDLED_SKILLS_PATH = "skills"  // assets 路径
-        private const val MANAGED_SKILLS_DIR = "/sdcard/AndroidForClaw/.skills"
-        private const val WORKSPACE_SKILLS_DIR = "/sdcard/androidforclaw-workspace/skills"
+        private const val MANAGED_SKILLS_DIR = "/sdcard/.androidforclaw/skills"  // 对齐 ~/.openclaw/skills/
+        private const val WORKSPACE_SKILLS_DIR = "/sdcard/.androidforclaw/workspace/skills"  // 对齐 ~/.openclaw/workspace/
 
         // Skill 文件名
         private const val SKILL_FILE_NAME = "SKILL.md"
@@ -265,8 +265,10 @@ class SkillsLoader(private val context: Context) {
     }
 
     /**
-     * 从 /sdcard/AndroidForClaw/.skills/ 加载用户 Skills (Managed)
+     * 从 /sdcard/.androidforclaw/skills/ 加载托管 Skills (Managed)
      * 优先级: 中等（覆盖 Bundled）
+     *
+     * 对齐 OpenClaw: ~/.openclaw/skills/
      */
     private fun loadManagedSkills(skills: MutableMap<String, SkillDocument>): Int {
         var count = 0
@@ -310,13 +312,13 @@ class SkillsLoader(private val context: Context) {
     }
 
     /**
-     * 从 /sdcard/androidforclaw-workspace/skills/ 加载工作区 Skills (Workspace)
+     * 从 /sdcard/.androidforclaw/workspace/skills/ 加载工作区 Skills (Workspace)
      * 优先级: 最高（覆盖 Bundled 和 Managed）
      *
      * 对齐 OpenClaw 架构：
-     * - OpenClaw: ~/.openclaw/workspace/skills/
-     * - AndroidForClaw: /sdcard/androidforclaw-workspace/skills/
-     * - 用户可通过文件管理器直接访问和编辑
+     * - OpenClaw: ~/.openclaw/workspace/ (Git repo)
+     * - AndroidForClaw: /sdcard/.androidforclaw/workspace/ (可 Git)
+     * - workspace/ 是用户的主工作区，支持版本控制
      */
     private fun loadWorkspaceSkills(skills: MutableMap<String, SkillDocument>): Int {
         var count = 0
