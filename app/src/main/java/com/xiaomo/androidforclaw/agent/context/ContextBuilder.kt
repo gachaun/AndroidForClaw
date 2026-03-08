@@ -69,7 +69,10 @@ class ContextBuilder(
         }
     }
 
-    private val workspaceDir = File(context.filesDir, "workspace")
+    // 对齐 OpenClaw: workspace 在外部存储,用户可访问
+    // OpenClaw: ~/.openclaw/workspace
+    // AndroidForClaw: /sdcard/.androidforclaw/workspace
+    private val workspaceDir = File("/sdcard/.androidforclaw/workspace")
     private val skillsLoader = SkillsLoader(context)
     private val channelManager = ChannelManager(context)
 
@@ -432,14 +435,23 @@ Current Time: $currentTime
     /**
      * 10. Workspace Section
      */
+    /**
+     * 10. Workspace Section (对齐 OpenClaw 格式)
+     * OpenClaw: ~/.openclaw/workspace
+     * AndroidForClaw: /sdcard/.androidforclaw/workspace
+     */
     private fun buildWorkspaceSection(): String {
         val workspacePath = workspaceDir.absolutePath
         return """
-# Workspace
+## Workspace
 
-Your workspace is at: $workspacePath
+Your working directory is: $workspacePath
+
+Treat this directory as the single global workspace for file operations unless explicitly instructed otherwise.
+
 - Long-term memory: $workspacePath/memory/MEMORY.md (write important facts here)
 - Custom skills: $workspacePath/skills/{skill-name}/SKILL.md
+- User-editable files: You can read/write any files in this directory
         """.trimIndent()
     }
 
