@@ -24,7 +24,7 @@ class AndroidToolRegistry(
     private val context: Context,
     private val taskDataManager: TaskDataManager,
     private val memoryManager: MemoryManager? = null,
-    private val workspacePath: String = "/sdcard/androidforclaw-workspace"
+    private val workspacePath: String = "/sdcard/.androidforclaw/workspace"
 ) {
     companion object {
         private const val TAG = "AndroidToolRegistry"

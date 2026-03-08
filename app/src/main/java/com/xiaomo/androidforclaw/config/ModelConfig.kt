@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 /**
  * 模型配置数据类 - 对齐 OpenClaw 的配置格式
  *
- * 配置文件位置：/sdcard/AndroidForClaw/config/models.json
+ * 配置文件位置：/sdcard/.androidforclaw/config/models.json
  *
  * 参考：OpenClaw src/config/types.models.ts
  */

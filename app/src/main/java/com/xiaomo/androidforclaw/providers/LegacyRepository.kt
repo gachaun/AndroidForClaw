@@ -12,7 +12,7 @@ import com.xiaomo.androidforclaw.util.AppConstants
  * 提供更高级别的 API 封装
  * 根据配置自动选择 OpenAI 或 Anthropic 格式
  *
- * **配置来源**: 从 /sdcard/AndroidForClaw/config/openclaw.json 和 models.json 读取配置
+ * **配置来源**: 从 /sdcard/.androidforclaw/config/openclaw.json 和 models.json 读取配置
  */
 class LegacyRepository(
     context: Context,

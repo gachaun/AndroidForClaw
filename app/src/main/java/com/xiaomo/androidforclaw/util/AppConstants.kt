@@ -8,8 +8,8 @@ object AppConstants {
 
     // ============= API 配置说明 =============
     // 所有 API 配置现在从以下配置文件读取：
-    // - /sdcard/AndroidForClaw/config/models.json (模型提供商配置)
-    // - /sdcard/AndroidForClaw/config/openclaw.json (OpenClaw 主配置)
+    // - /sdcard/.androidforclaw/config/models.json (模型提供商配置)
+    // - /sdcard/.androidforclaw/config/openclaw.json (OpenClaw 主配置)
     //
     // 请勿在此文件中硬编码 API Key 和 Base URL
     // 使用 ConfigLoader.loadModelsConfig() 和 ConfigLoader.loadOpenClawConfig() 读取配置
@@ -23,8 +23,8 @@ object AppConstants {
     // 优先级：系统环境变量 > AppConstants 常量 > MMKV 存储
     //
     // ⚠️ 开源版本：请在配置文件中设置 API Key，不要在此处硬编码
-    // 配置文件位置：/sdcard/AndroidForClaw/config/models.json
-    const val OPENROUTER_API_KEY = ""  // 请在 /sdcard/AndroidForClaw/config/models.json 中配置
+    // 配置文件位置：/sdcard/.androidforclaw/config/models.json
+    const val OPENROUTER_API_KEY = ""  // 请在 /sdcard/.androidforclaw/config/models.json 中配置
 
     // ============= 旧常量（兼容性保留） =============
     @Deprecated("已停用，使用 OpenRouter", ReplaceWith("OPENROUTER_API_KEY"))

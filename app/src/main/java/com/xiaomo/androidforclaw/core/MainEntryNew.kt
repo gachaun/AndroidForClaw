@@ -98,7 +98,7 @@ object MainEntryNew {
             Log.d(TAG, "✓ ToolRegistry initialized (${toolRegistry.getToolCount()} universal tools)")
 
             // 3. 初始化 MemoryManager (记忆管理)
-            val workspacePath = "/sdcard/androidforclaw-workspace"
+            val workspacePath = "/sdcard/.androidforclaw/workspace"
             val memoryManager = com.xiaomo.androidforclaw.agent.memory.MemoryManager(workspacePath)
 
             // 4. 初始化 AndroidToolRegistry (Android 平台工具)

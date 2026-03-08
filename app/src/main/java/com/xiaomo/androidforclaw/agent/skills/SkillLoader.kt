@@ -16,8 +16,8 @@ import java.io.InputStreamReader
  * - Markdown 内容（技能说明、最佳实践等）
  *
  * 加载顺序（优先级从高到低）:
- * 1. Workspace Skills: /sdcard/AndroidForClaw/workspace/skills/
- * 2. Managed Skills: /sdcard/AndroidForClaw/.skills/
+ * 1. Workspace Skills: /sdcard/.androidforclaw/workspace/skills/
+ * 2. Managed Skills: /sdcard/.androidforclaw/.skills/
  * 3. Bundled Skills: assets/skills/
  */
 class SkillLoader(private val context: Context) {
@@ -26,8 +26,8 @@ class SkillLoader(private val context: Context) {
         private const val TAG = "SkillLoader"
 
         // Skill 文件路径
-        private const val WORKSPACE_SKILLS_DIR = "/sdcard/AndroidForClaw/workspace/skills"
-        private const val MANAGED_SKILLS_DIR = "/sdcard/AndroidForClaw/.skills"
+        private const val WORKSPACE_SKILLS_DIR = "/sdcard/.androidforclaw/workspace/skills"
+        private const val MANAGED_SKILLS_DIR = "/sdcard/.androidforclaw/.skills"
         private const val BUNDLED_SKILLS_PATH = "skills"
 
         // 文件名
@@ -48,8 +48,8 @@ class SkillLoader(private val context: Context) {
 
     enum class SkillSource {
         BUNDLED,    // assets/skills/
-        MANAGED,    // /sdcard/AndroidForClaw/.skills/
-        WORKSPACE   // /sdcard/AndroidForClaw/workspace/skills/
+        MANAGED,    // /sdcard/.androidforclaw/.skills/
+        WORKSPACE   // /sdcard/.androidforclaw/workspace/skills/
     }
 
     /**

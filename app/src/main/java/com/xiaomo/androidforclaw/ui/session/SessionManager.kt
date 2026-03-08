@@ -82,8 +82,8 @@ class SessionManager {
      * 如果 workspace 的 IDENTITY.md 为空或不存在，说明是首次启动
      */
     private fun getWelcomeMessage(): String {
-        // 检查 /sdcard/androidforclaw-workspace/ 是否存在
-        val workspaceDir = java.io.File("/sdcard/androidforclaw-workspace")
+        // 检查 /sdcard/.androidforclaw/workspace/ 是否存在
+        val workspaceDir = java.io.File("/sdcard/.androidforclaw/workspace")
         val identityFile = java.io.File(workspaceDir, "IDENTITY.md")
 
         // 判断是否是首次启动（文件不存在或为空或包含模板文字）
@@ -104,7 +104,7 @@ class SessionManager {
 
 ## 📝 需要配置的文件
 
-你的 workspace 位于：`/sdcard/androidforclaw-workspace/`
+你的 workspace 位于：`/sdcard/.androidforclaw/workspace/`
 
 请使用文件管理器创建和编辑以下文件：
 

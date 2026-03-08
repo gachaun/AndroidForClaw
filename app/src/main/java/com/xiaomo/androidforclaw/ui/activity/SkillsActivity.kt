@@ -120,13 +120,13 @@ class SkillsActivity : AppCompatActivity() {
      */
     private fun detectSkillSource(skillName: String): Pair<String, String> {
         // 检查 workspace
-        val workspacePath = "/sdcard/AndroidForClaw/workspace/skills/$skillName"
+        val workspacePath = "/sdcard/.androidforclaw/workspace/skills/$skillName"
         if (File(workspacePath).exists()) {
             return "workspace" to workspacePath
         }
 
         // 检查 managed
-        val managedPath = "/sdcard/AndroidForClaw/.skills/$skillName"
+        val managedPath = "/sdcard/.androidforclaw/.skills/$skillName"
         if (File(managedPath).exists()) {
             return "managed" to managedPath
         }

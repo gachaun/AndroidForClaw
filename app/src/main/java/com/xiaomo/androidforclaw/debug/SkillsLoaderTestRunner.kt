@@ -126,7 +126,7 @@ object SkillsLoaderTestRunner {
     private fun testPriorityOverride(context: Context): SingleTestResult {
         return try {
             // 创建测试用的 Workspace Skill
-            val workspaceDir = File("/sdcard/AndroidForClaw/workspace/skills/test-override")
+            val workspaceDir = File("/sdcard/.androidforclaw/workspace/skills/test-override")
             workspaceDir.mkdirs()
 
             val testSkillFile = File(workspaceDir, "SKILL.md")

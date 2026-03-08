@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName
  * 对齐 OpenClaw 的配置格式
  * 参考：OpenClaw src/config/types.config.ts
  *
- * 配置文件位置：/sdcard/AndroidForClaw/config/openclaw.json
+ * 配置文件位置：/sdcard/.androidforclaw/config/openclaw.json
  */
 
 /**
@@ -94,10 +94,10 @@ data class SkillsConfig(
     val bundledPath: String = "assets/skills",  // Bundled skills 路径
 
     @SerializedName("workspacePath")
-    val workspacePath: String = "/sdcard/AndroidForClaw/workspace/skills",  // Workspace skills
+    val workspacePath: String = "/sdcard/.androidforclaw/workspace/skills",  // Workspace skills
 
     @SerializedName("managedPath")
-    val managedPath: String = "/sdcard/AndroidForClaw/.skills",  // Managed skills
+    val managedPath: String = "/sdcard/.androidforclaw/.skills",  // Managed skills
 
     @SerializedName("autoLoad")
     val autoLoad: List<String> = listOf("mobile-operations"),  // 自动加载的 skills
@@ -302,7 +302,7 @@ data class LoggingConfig(
     val logToFile: Boolean = true,
 
     @SerializedName("logPath")
-    val logPath: String = "/sdcard/AndroidForClaw/logs",
+    val logPath: String = "/sdcard/.androidforclaw/logs",
 
     @SerializedName("maxFileSize")
     val maxFileSize: Long = 10 * 1024 * 1024,  // 10MB
@@ -328,7 +328,7 @@ data class MemoryConfig(
     val enabled: Boolean = true,
 
     @SerializedName("path")
-    val path: String = "/sdcard/AndroidForClaw/workspace/memory",
+    val path: String = "/sdcard/.androidforclaw/workspace/memory",
 
     @SerializedName("autoSave")
     val autoSave: Boolean = true,

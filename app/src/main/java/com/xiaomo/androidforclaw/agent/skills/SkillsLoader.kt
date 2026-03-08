@@ -12,8 +12,8 @@ import java.io.File
  *
  * 加载优先级（高优先级覆盖低优先级）:
  * 1. Bundled Skills (最低) - assets/skills/
- * 2. Managed Skills (中等) - /sdcard/AndroidForClaw/.skills/
- * 3. Workspace Skills (最高) - /sdcard/androidforclaw-workspace/skills/
+ * 2. Managed Skills (中等) - /sdcard/.androidforclaw/skills/
+ * 3. Workspace Skills (最高) - /sdcard/.androidforclaw/workspace/skills/
  *
  * Workspace 对齐 OpenClaw 架构：
  * - OpenClaw: ~/.openclaw/workspace/ (Git repo)
