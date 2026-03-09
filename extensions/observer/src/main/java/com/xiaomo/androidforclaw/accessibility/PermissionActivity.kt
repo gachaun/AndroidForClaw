@@ -206,12 +206,19 @@ class PermissionActivity : Activity() {
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean {
-        val service = "${packageName}/.service.PhoneAccessibilityService"
+        // 检查两种格式: 短格式 (.service.PhoneAccessibilityService) 和完整格式
+        val serviceShort = "${packageName}/.service.PhoneAccessibilityService"
+        val serviceFull = "${packageName}/com.xiaomo.androidforclaw.accessibility.service.PhoneAccessibilityService"
         val enabledServices = Settings.Secure.getString(
             contentResolver,
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         )
-        return enabledServices?.contains(service) == true
+
+        val isEnabled = enabledServices?.let {
+            it.contains(serviceShort) || it.contains(serviceFull)
+        } ?: false
+
+        return isEnabled
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
