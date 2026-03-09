@@ -8,43 +8,53 @@ Pre-built APK packages, ready to use.
 
 | File | Size | Description |
 |------|------|-------------|
-| [androidforclaw-v2.4.3-debug.apk](androidforclaw-v2.4.3-debug.apk) | 39MB | Main application (Debug version) |
-| [androidforclaw-accessibility-v2.4.3.apk](androidforclaw-accessibility-v2.4.3.apk) | 4.3MB | Accessibility Service APK |
+| [androidforclaw-v2.4.3-release.apk](androidforclaw-v2.4.3-release.apk) | 31MB | Main application (Release version) |
+| [androidforclaw-accessibility-v2.4.3-release.apk](androidforclaw-accessibility-v2.4.3-release.apk) | 4.3MB | Accessibility Service APK (S4Claw) |
+| [BClaw-universal-release.apk](BClaw-universal-release.apk) | 8.4MB | Browser for AI (Optional) |
 
 ### Installation Steps
 
 1. **Download APK**
-   - Download both APK files above
+   - Download the APK files above (browser is optional)
 
 2. **Install Apps**
    ```bash
    # Install via ADB
-   adb install androidforclaw-v2.4.3-debug.apk
-   adb install androidforclaw-accessibility-v2.4.3.apk
+   adb install androidforclaw-v2.4.3-release.apk
+   adb install androidforclaw-accessibility-v2.4.3-release.apk
+   adb install BClaw-universal-release.apk  # Optional
 
    # Or install directly on phone
    ```
 
 3. **Configure API**
 
-   Create config file `/sdcard/AndroidForClaw/config/models.json`:
+   Create config file `/sdcard/.androidforclaw/config/openclaw.json`:
 
    ```json
    {
-     "mode": "merge",
-     "providers": {
-       "openrouter": {
-         "baseUrl": "https://openrouter.ai/api/v1",
-         "apiKey": "YOUR_API_KEY_HERE",
-         "api": "openai-completions",
-         "models": [
-           {
-             "id": "anthropic/claude-opus-4",
-             "name": "Claude Opus 4",
-             "reasoning": true,
-             "contextWindow": 200000
-           }
-         ]
+     "version": "1.0.0",
+     "agent": {
+       "name": "androidforclaw",
+       "defaultModel": "claude-opus-4-6",
+       "maxIterations": 50
+     },
+     "models": {
+       "mode": "merge",
+       "providers": {
+         "anthropic": {
+           "baseUrl": "https://api.anthropic.com/v1",
+           "apiKey": "YOUR_ANTHROPIC_API_KEY",
+           "api": "anthropic",
+           "models": [
+             {
+               "id": "claude-opus-4-6",
+               "name": "Claude Opus 4.6",
+               "reasoning": true,
+               "contextWindow": 200000
+             }
+           ]
+         }
        }
      }
    }
@@ -52,23 +62,26 @@ Pre-built APK packages, ready to use.
 
    Push config to device:
    ```bash
-   adb push models.json /sdcard/AndroidForClaw/config/models.json
+   adb push openclaw.json /sdcard/.androidforclaw/config/openclaw.json
    ```
 
 4. **Grant Permissions**
 
-   Open the app and grant following permissions:
-   - ✅ **Accessibility Service** - Required for device control
-   - ✅ **Display Over Apps** - Required for UI overlay
-   - ✅ **Media Projection** - Required for screenshots
+   - Open **S4Claw** app and enable:
+     - ✅ **Accessibility Service** - Required for device control
+     - ✅ **Media Projection** - Required for screenshots
+   - Open **Main app** and grant:
+     - ✅ **Display Over Apps** - Required for floating window
 
 5. **Configure Channels** (Optional)
 
-   Configure Feishu or Discord: `/sdcard/AndroidForClaw/config/openclaw.json`
+   Configure Feishu or Discord in `/sdcard/.androidforclaw/config/openclaw.json`:
 
    ```json
    {
      "gateway": {
+       "enabled": true,
+       "port": 8080,
        "feishu": {
          "enabled": true,
          "appId": "YOUR_APP_ID",
@@ -90,40 +103,43 @@ Pre-built APK packages, ready to use.
 
 ## 📋 System Requirements
 
-- **Android**: 5.0+ (API 21+)
+- **Android**: 8.0+ (API 26+)
 - **Permissions**: Accessibility Service, Display Over Apps, Media Projection
-- **Network**: Internet connection for LLM API (Claude Opus 4 or OpenAI-compatible)
+- **Network**: Internet connection for LLM API (Claude Opus 4.6 recommended)
 
 ## 🔧 Signing Info
 
-### Main App (androidforclaw-v2.4.3-debug.apk)
-- Signature: Android Debug Keystore
-- Package: `com.xiaomo.androidforclaw.debug`
-
-### Accessibility Service (androidforclaw-accessibility-v2.4.3.apk)
-- Signature: Unsigned (manual signing required or allow unsigned installation)
-- Package: `com.xiaomo.androidforclaw.accessibility`
+All APKs are signed with unified keystore for compatibility:
+- **Keystore**: keystore.jks
+- **Signature**: Production signing
+- **Main Package**: `com.xiaomo.androidforclaw`
+- **Accessibility Package**: `com.xiaomo.androidforclaw.accessibility`
 
 ## 📝 Release Notes
 
-### v2.4.3 (2026-03-07)
+### v2.4.3 (2026-03-09)
 
-**New Features:**
-- Complete Skills System implementation
-- Multi-channel Gateway (Feishu, Discord, HTTP)
-- Session management and conversation history
-- Extended Thinking with Claude Opus 4.6
+**🎉 New Features:**
+- ✅ **Full ClawHub integration** - skills.search, skills.install, skills.status
+- 🌐 **Browser Tool improvements** - Fixed port configuration (8765), added Baidu search example
+- 📚 **Complete documentation** - [CLAWHUB_GUIDE.md](../CLAWHUB_GUIDE.md)
 
-**Improvements:**
-- Cleaned up unused resources (-2369 lines)
-- Removed all legacy project references
-- Optimized APK size
-- Improved compilation speed
+**🔧 Technical Improvements:**
+- 🔐 **Unified signing configuration** - All APKs use same keystore.jks
+- ✅ **Release build auto-signing** - No manual signing needed
+- 🎨 **UI optimizations** - ConfigActivity Skills page, ChatScreen improvements
 
-**Architecture:**
-- ~85% alignment with OpenClaw
-- Agent Loop + Skills + Tools pattern
-- Gateway-based multi-channel access
+**⚠️ Important:**
+- ClawHub API (clawhub.ai) is fully operational, even if website (clawhub.com) shows 404
+- BrowserForClaw uses port 8765 (not 8766)
+- Don't use open_app for browser operations, use browser tool directly
+
+**📥 Download:** [GitHub Releases](https://github.com/xiaomochn/AndroidForClaw/releases/tag/v2.4.3)
+
+**🔗 Related Docs:**
+- [CLAWHUB_GUIDE.md](../CLAWHUB_GUIDE.md) - ClawHub integration guide
+- [CLAUDE.md](../CLAUDE.md) - Development guide
+- [ARCHITECTURE.md](../ARCHITECTURE.md) - Architecture design
 
 ## 🐛 Troubleshooting
 
@@ -135,13 +151,13 @@ Having issues?
 
 ## 📚 More Resources
 
-- [Full Documentation](../docs/README.md)
+- [Full Documentation](../README.md)
 - [Quick Start](../README.md#-quick-start)
-- [Architecture](../CLAUDE.md)
+- [ClawHub Guide](../CLAWHUB_GUIDE.md)
 - [Contributing](../CONTRIBUTING.md)
 
 ---
 
-**AndroidForClaw** - Give AI an Android Phone 📱🤖
+**AndroidForClaw** - Give AI the power to use phones 🦞📱
 
 *Inspired by [OpenClaw](https://github.com/openclaw/openclaw)*
