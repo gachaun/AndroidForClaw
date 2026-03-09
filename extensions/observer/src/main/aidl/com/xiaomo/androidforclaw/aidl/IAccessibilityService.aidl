@@ -19,6 +19,9 @@ interface IAccessibilityService {
     boolean pressHome();
     boolean pressBack();
 
+    // Text input operations
+    boolean inputText(String text);
+
     // Current app info
     String getCurrentPackageName();
 

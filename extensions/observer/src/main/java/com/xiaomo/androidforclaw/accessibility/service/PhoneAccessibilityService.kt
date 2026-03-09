@@ -249,6 +249,38 @@ class PhoneAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * 输入文本
+     * 通过 AccessibilityNodeInfo.ACTION_SET_TEXT 实现
+     */
+    fun inputText(text: String): Boolean {
+        try {
+            val root = rootInActiveWindow ?: return false
+
+            // 查找当前焦点的可编辑节点
+            val focusedNode = root.findFocus(android.view.accessibility.AccessibilityNodeInfo.FOCUS_INPUT)
+            if (focusedNode != null && focusedNode.isEditable) {
+                val args = android.os.Bundle()
+                args.putCharSequence(
+                    android.view.accessibility.AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
+                    text
+                )
+                val success = focusedNode.performAction(
+                    android.view.accessibility.AccessibilityNodeInfo.ACTION_SET_TEXT,
+                    args
+                )
+                Log.d(TAG, if (success) "✅ Text input: $text" else "❌ Failed to input text")
+                return success
+            }
+
+            Log.w(TAG, "❌ No focused editable node found")
+            return false
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to input text", e)
+            return false
+        }
+    }
+
     // Java-compatible synchronous wrapper
     fun performClickAtSync(x: Int, y: Int, isLongClick: Boolean): Boolean {
         return kotlinx.coroutines.runBlocking {

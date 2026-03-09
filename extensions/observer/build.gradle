@@ -66,6 +66,10 @@ android {
         jvmTarget = '17'
     }
 
+    lint {
+        disable 'ProtectedPermissions'
+    }
+
     namespace 'com.xiaomo.androidforclaw.accessibility'
 }
 

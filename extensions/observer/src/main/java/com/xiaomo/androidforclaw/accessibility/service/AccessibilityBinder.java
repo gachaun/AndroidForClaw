@@ -119,6 +119,16 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
     }
 
     @Override
+    public boolean inputText(String text) {
+        try {
+            return service.inputText(text);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to input text: " + text, e);
+            return false;
+        }
+    }
+
+    @Override
     public String getCurrentPackageName() {
         return service.currentPackageName;
     }

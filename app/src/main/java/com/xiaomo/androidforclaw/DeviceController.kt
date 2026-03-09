@@ -191,28 +191,8 @@ object DeviceController {
     }
 
     /** Input text into the currently focused element (e.g., an input box). */
-
     fun inputText(text: String, context: Context) {
-        val intent = Intent()
-        intent.setAction("ADB_INPUT_TEXT")
-        intent.putExtra("msg", text)
-        intent.putExtra("mcode", "0,66");
-        context.sendBroadcast(intent)
-        // 延迟一下再发送（确保文字输入完成）
-        Handler(Looper.getMainLooper()).postDelayed({
-            val intent2 = Intent()
-            intent2.setAction("ADB_SEND_MESSAGE")
-            context.sendBroadcast(intent2)
-        }, 100)
-
-    }
-
-    fun sendText(text: String, context: Context) {
-        val intent = Intent()
-        intent.setAction("ADB_INPUT_TEXT")
-        intent.putExtra("msg", text)
-        context.sendBroadcast(intent)
-
+        AccessibilityProxy.inputText(text)
     }
 
     /** Simulate a Back button press. */

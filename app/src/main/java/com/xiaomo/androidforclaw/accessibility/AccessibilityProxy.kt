@@ -216,6 +216,16 @@ object AccessibilityProxy {
         }
     }
 
+    fun inputText(text: String): Boolean {
+        return try {
+            service?.inputText(text) ?: false
+        } catch (e: RemoteException) {
+            Log.e(TAG, "Failed to input text", e)
+            _isConnected.postValue(false)
+            false
+        }
+    }
+
     suspend fun getCurrentPackageName(): String = withContext(Dispatchers.IO) {
         try {
             service?.currentPackageName ?: ""
