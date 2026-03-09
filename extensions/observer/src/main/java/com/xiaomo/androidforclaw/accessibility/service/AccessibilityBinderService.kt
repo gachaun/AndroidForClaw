@@ -21,6 +21,9 @@ class AccessibilityBinderService : Service() {
         // CountDownLatch 用于同步等待 serviceInstance 初始化
         private var readyLatch: CountDownLatch? = null
 
+        // Binder instance reference (if already created)
+        private var binderInstance: AccessibilityBinder? = null
+
         /**
          * 通知 serviceInstance 已准备好
          */
@@ -29,72 +32,77 @@ class AccessibilityBinderService : Service() {
             readyLatch?.countDown()
             Log.d(TAG, "countDown completed")
         }
+
+        /**
+         * 更新已存在的 binder 的 service 引用
+         * 用于处理 bind 在 accessibility service 启动之前发生的情况
+         */
+        fun updateBinderService(service: PhoneAccessibilityService) {
+            binderInstance?.setService(service)
+            Log.d(TAG, "Binder service reference updated")
+        }
     }
 
     private lateinit var binder: AccessibilityBinder
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "AccessibilityBinderService created")
+        Log.e(TAG, "========== AccessibilityBinderService onCreate() called ==========")
+        Log.e(TAG, "onCreate: serviceInstance = ${serviceInstance != null}")
 
-        // 设置 Context 用于 FileProvider
-        MediaProjectionHelper.setContext(this)
-        Log.d(TAG, "MediaProjectionHelper context set")
+        // 初始化 MediaProjectionHelper (使用工作空间)
+        val workspace = File("/sdcard/.androidforclaw/workspace")
+        val screenshotDir = File(workspace, "screenshots")
+        MediaProjectionHelper.initialize(this, screenshotDir)
+        Log.d(TAG, "MediaProjectionHelper initialized")
+    }
 
-        // 使用外部存储的公共Download目录，确保主应用可以访问
-        // Download 目录是所有应用都可以读写的公共目录
-        val screenshotDir = File("/sdcard/Download/AndroidForClaw")
-        screenshotDir.mkdirs() // 创建目录
-
-        // 设置目录权限，确保其他应用可以读取
-        try {
-            screenshotDir.setReadable(true, false)
-            screenshotDir.setWritable(true, false)
-            screenshotDir.setExecutable(true, false)
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to set directory permissions", e)
-        }
-
-        MediaProjectionHelper.setScreenshotDirectory(screenshotDir)
-        Log.d(TAG, "MediaProjectionHelper screenshot directory: ${screenshotDir.absolutePath}")
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.e(TAG, "========== onStartCommand called ==========")
+        return START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        Log.d(TAG, "onBind called")
+        Log.e(TAG, "========== onBind called with intent: $intent ==========")
+        Log.e(TAG, "onBind: serviceInstance = ${serviceInstance != null}")
 
-        // 创建新的 CountDownLatch（每次 bind 都创建新的）
-        readyLatch = CountDownLatch(1)
+        // 如果 onCreate 没被调用，手动初始化
+        if (!this::binder.isInitialized) {
+            Log.e(TAG, "onCreate was not called, initializing manually...")
+            try {
+                // 初始化 MediaProjectionHelper (使用工作空间)
+                val workspace = File("/sdcard/.androidforclaw/workspace")
+                val screenshotDir = File(workspace, "screenshots")
+                MediaProjectionHelper.initialize(this, screenshotDir)
+                Log.d(TAG, "Manual initialization complete")
+            } catch (e: Exception) {
+                Log.e(TAG, "Manual initialization failed", e)
+            }
+        }
 
-        // 检查是否已经 ready
+        // IMPORTANT: Always return a binder, even if serviceInstance is not ready yet!
+        // The binder will handle "not ready" state internally by returning errors.
+        // Returning null here causes Android to kill the service.
+
+        // Check if serviceInstance is ready
         var accessibilityService = serviceInstance
         if (accessibilityService != null) {
-            Log.i(TAG, "✅ Accessibility service already ready")
-            binder = AccessibilityBinder(accessibilityService)
-            return binder
-        }
-
-        // 等待 serviceInstance 初始化（最多 5 秒）
-        Log.d(TAG, "Waiting for accessibility service to be ready...")
-        try {
-            val success = readyLatch!!.await(5, TimeUnit.SECONDS)
-            if (!success) {
-                Log.w(TAG, "❌ Accessibility service not ready after 5 seconds, returning null")
-                return null
+            Log.i(TAG, "✅ Accessibility service already ready, creating binder")
+            if (!this::binder.isInitialized) {
+                binder = AccessibilityBinder(accessibilityService)
+                binderInstance = binder
             }
-        } catch (e: InterruptedException) {
-            Log.e(TAG, "Interrupted while waiting for accessibility service", e)
-            return null
+        } else {
+            Log.w(TAG, "⚠️ Accessibility service not ready yet, creating placeholder binder")
+            Log.w(TAG, "   Binder methods will return errors until PhoneAccessibilityService starts")
+            // Create binder with null service - methods will return errors until ready
+            if (!this::binder.isInitialized) {
+                binder = AccessibilityBinder(null)
+                binderInstance = binder
+            }
         }
 
-        // 再次检查 serviceInstance
-        accessibilityService = serviceInstance
-        if (accessibilityService == null) {
-            Log.w(TAG, "❌ serviceInstance is still null after latch released")
-            return null
-        }
-
-        Log.i(TAG, "✅ Accessibility service ready, returning binder")
-        binder = AccessibilityBinder(accessibilityService)
+        Log.i(TAG, "✅ Returning binder (ready=${serviceInstance != null})")
         return binder
     }
 

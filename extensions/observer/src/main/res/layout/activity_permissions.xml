@@ -31,7 +31,7 @@
                     android:id="@+id/tv_all_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚠️ 已授予 0/2 个权限"
+                    android:text="⚠️ 已授予 0/3 个权限"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#000000" />
@@ -167,6 +167,64 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="授予录屏权限"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 3. 存储权限 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="存储权限"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000" />
+
+                    <TextView
+                        android:id="@+id/tv_storage_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="❌ 未授权"
+                        android:textSize="14sp"
+                        android:textColor="#F44336" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_storage_desc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="用于：保存截图文件、访问工作空间"
+                    android:textSize="12sp"
+                    android:textColor="#666666" />
+
+                <Button
+                    android:id="@+id/btn_storage"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="授予存储权限"
                     android:textSize="14sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

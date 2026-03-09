@@ -9,6 +9,7 @@ import android.os.IBinder
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import com.xiaomo.androidforclaw.accessibility.MediaProjectionHelper
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -41,18 +42,30 @@ class PhoneAccessibilityService : AccessibilityService() {
         AccessibilityBinderService.notifyServiceReady()
         Log.d(TAG, "✅ notifyServiceReady 已调用")
 
+        // 如果 binder 已经创建（bind 在 start 之前发生），更新 binder 的 service 引用
+        AccessibilityBinderService.updateBinderService(this)
+        Log.d(TAG, "✅ binder service 引用已更新")
+
         // 启动 AccessibilityBinderService，允许其他应用绑定
         try {
             val binderIntent = Intent(this, AccessibilityBinderService::class.java)
-            startService(binderIntent)
-            Log.i(TAG, "✅ AccessibilityBinderService 已启动")
+            val componentName = startService(binderIntent)
+            Log.e(TAG, "========== startService() returned: $componentName ==========")
+            if (componentName == null) {
+                Log.e(TAG, "❌ startService() returned null - service not started!")
+            } else {
+                Log.i(TAG, "✅ AccessibilityBinderService 已启动")
+            }
         } catch (e: Exception) {
             Log.e(TAG, "启动 AccessibilityBinderService 失败", e)
         }
 
-        // 不在无障碍服务连接时启动前台服务
-        // 前台服务只在真正需要截图时由 MediaProjectionHelper 启动
-        Log.i(TAG, "✅ 无障碍服务已连接 (前台服务将在需要时启动)")
+        // 初始化 MediaProjectionHelper (使用工作空间)
+        val workspace = java.io.File("/sdcard/.androidforclaw/workspace")
+        val screenshotDir = java.io.File(workspace, "screenshots")
+        MediaProjectionHelper.initialize(this, screenshotDir)
+
+        Log.i(TAG, "✅ 无障碍服务已连接 (前台服务将在录屏权限授予时自动启动)")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {

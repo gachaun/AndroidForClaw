@@ -14,14 +14,25 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
     private static final String TAG = "AccessibilityBinder";
     private static final String VERSION = "1.0.0";
 
-    private final PhoneAccessibilityService service;
+    private PhoneAccessibilityService service;
 
     public AccessibilityBinder(PhoneAccessibilityService service) {
         this.service = service;
+        Log.d(TAG, "AccessibilityBinder created with service=" + (service != null));
+    }
+
+    // Allow updating the service instance after creation
+    public void setService(PhoneAccessibilityService service) {
+        this.service = service;
+        Log.i(TAG, "✅ Service instance updated");
     }
 
     @Override
     public boolean isServiceReady() {
+        if (service == null) {
+            Log.w(TAG, "isServiceReady: service is null");
+            return false;
+        }
         return service.getRootInActiveWindow() != null;
     }
 
@@ -32,6 +43,10 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
 
     @Override
     public List<ViewNodeParcelable> dumpViewTree() {
+        if (service == null) {
+            Log.w(TAG, "dumpViewTree: service is null");
+            return new ArrayList<>();
+        }
         try {
             List<ViewNode> nodes = service.dumpView();
             Log.d(TAG, "dumpViewTree: returning " + nodes.size() + " nodes");
@@ -67,6 +82,10 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
 
     @Override
     public boolean performTap(int x, int y) {
+        if (service == null) {
+            Log.w(TAG, "performTap: service is null");
+            return false;
+        }
         try {
             return service.performClickAtSync(x, y, false);
         } catch (Exception e) {
@@ -77,6 +96,10 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
 
     @Override
     public boolean performLongPress(int x, int y) {
+        if (service == null) {
+            Log.w(TAG, "performLongPress: service is null");
+            return false;
+        }
         try {
             return service.performClickAtSync(x, y, true);
         } catch (Exception e) {
@@ -87,6 +110,10 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
 
     @Override
     public boolean performSwipe(int startX, int startY, int endX, int endY, long durationMs) {
+        if (service == null) {
+            Log.w(TAG, "performSwipe: service is null");
+            return false;
+        }
         try {
             service.performSwipe((float) startX, (float) startY, (float) endX, (float) endY);
             return true;
@@ -98,6 +125,10 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
 
     @Override
     public boolean pressHome() {
+        if (service == null) {
+            Log.w(TAG, "pressHome: service is null");
+            return false;
+        }
         try {
             service.pressHomeButton();
             return true;
@@ -109,6 +140,10 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
 
     @Override
     public boolean pressBack() {
+        if (service == null) {
+            Log.w(TAG, "pressBack: service is null");
+            return false;
+        }
         try {
             service.pressBackButton();
             return true;
@@ -120,6 +155,10 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
 
     @Override
     public boolean inputText(String text) {
+        if (service == null) {
+            Log.w(TAG, "inputText: service is null");
+            return false;
+        }
         try {
             return service.inputText(text);
         } catch (Exception e) {
@@ -130,6 +169,10 @@ public class AccessibilityBinder extends IAccessibilityService.Stub {
 
     @Override
     public String getCurrentPackageName() {
+        if (service == null) {
+            Log.w(TAG, "getCurrentPackageName: service is null");
+            return "";
+        }
         return service.currentPackageName;
     }
 
