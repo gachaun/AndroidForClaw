@@ -24,9 +24,9 @@ class BrowserToolClient(private val context: Context) {
 
     companion object {
         private const val TAG = "BrowserToolClient"
-        // Use port 8766 to avoid conflict with AndroidForClaw Gateway (8765)
-        private const val BROWSER_API_URL = "http://localhost:8766/api/browser/execute"
-        private const val HEALTH_CHECK_URL = "http://localhost:8766/health"
+        // BrowserForClaw uses port 8765 (AndroidForClaw Gateway uses 8080)
+        private const val BROWSER_API_URL = "http://localhost:8765/api/browser/execute"
+        private const val HEALTH_CHECK_URL = "http://localhost:8765/health"
         private const val DEFAULT_TIMEOUT = 30000L  // 30 秒
 
         // BrowserForClaw 启动信息
@@ -148,7 +148,7 @@ class BrowserToolClient(private val context: Context) {
                 } else {
                     ToolResult(
                         success = false,
-                        error = "Failed to start BrowserForClaw HTTP API (port 8766). " +
+                        error = "Failed to start BrowserForClaw HTTP API (port 8765). " +
                                 "App is installed ($BROWSER_PACKAGE) but API service not responding. " +
                                 "Please ensure BrowserForClaw is the correct version with HTTP API support."
                     )
