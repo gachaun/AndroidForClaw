@@ -47,8 +47,32 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias = "android"
+            keyPassword = "android"
+            storeFile = project.rootProject.file("../../../../keystore.jks")
+            storePassword = "android"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
+        }
+        getByName("debug") {
+            keyAlias = "android"
+            keyPassword = "android"
+            storeFile = project.rootProject.file("../../../../keystore.jks")
+            storePassword = "android"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
+        }
+    }
+
     buildTypes {
         getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -57,6 +81,7 @@ android {
             )
         }
         create("releaseDebuggable") {
+            signingConfig = signingConfigs.getByName("debug")
             isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false
