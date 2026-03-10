@@ -1,6 +1,7 @@
 package com.xiaomo.androidforclaw.ui.activity
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -14,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.xiaomo.androidforclaw.config.ConfigLoader
 import kotlinx.coroutines.launch
@@ -26,6 +26,13 @@ import kotlinx.coroutines.launch
 class FeishuChannelActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 禁止截屏
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
+
         setContent {
             MaterialTheme {
                 FeishuChannelScreen(
@@ -171,8 +178,7 @@ fun FeishuChannelScreen(onBack: () -> Unit, context: android.content.Context = a
                 label = { Text("App ID") },
                 placeholder = { Text("cli_xxxxxx") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation()
+                singleLine = true
             )
 
             OutlinedTextField(
@@ -181,8 +187,7 @@ fun FeishuChannelScreen(onBack: () -> Unit, context: android.content.Context = a
                 label = { Text("App Secret") },
                 placeholder = { Text("输入 App Secret") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation()
+                singleLine = true
             )
 
             // 连接模式

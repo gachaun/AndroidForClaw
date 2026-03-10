@@ -973,7 +973,26 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
                                 // Check allowlist
                                 val allowFrom = feishuConfig.allowFrom
                                 if (allowFrom.isEmpty() || event.senderId !in allowFrom) {
-                                    Log.d(TAG, "❌ DM from ${event.senderId} not in allowlist, ignoring")
+                                    Log.d(TAG, "❌ DM from ${event.senderId} not in allowlist, sending reject message")
+
+                                    // Send rejection message in coroutine
+                                    val sender = feishuChannel?.sender
+                                    if (sender != null) {
+                                        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                            try {
+                                                val rejectMessage = "⚠️ 抱歉，你的账号不在白名单中，无法使用此机器人。\n\n你的飞书 User ID: `${event.senderId}`\n\n如需使用，请联系管理员将你的 User ID 添加到白名单。"
+                                                sender.sendTextMessage(
+                                                    receiveId = event.chatId,
+                                                    text = rejectMessage,
+                                                    receiveIdType = "chat_id",
+                                                    renderMode = com.xiaomo.feishu.messaging.RenderMode.AUTO
+                                                )
+                                                Log.i(TAG, "✅ 已发送白名单拒绝提示")
+                                            } catch (e: Exception) {
+                                                Log.e(TAG, "❌ 发送白名单拒绝提示失败: ${e.message}")
+                                            }
+                                        }
+                                    }
                                     return
                                 }
                                 Log.d(TAG, "✅ DM allowed (sender in allowlist)")
