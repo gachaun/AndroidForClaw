@@ -105,24 +105,32 @@ object SkillParser {
         val singleLineMatch = singleLineRegex.find(yaml)
         if (singleLineMatch != null) {
             val value = singleLineMatch.groupValues[1].trim()
-            // If not JSON start, return the value
-            if (!value.isEmpty() && !yaml.substring(singleLineMatch.range.last).trimStart().startsWith("{")) {
+            Log.d(TAG, "extractYamlField('$field'): singleLineMatch found, value='$value'")
+            // If not empty and not JSON start, return the value
+            if (value.isNotEmpty() && !yaml.substring(singleLineMatch.range.last).trimStart().startsWith("{")) {
+                Log.d(TAG, "extractYamlField('$field'): simple value (not JSON), returning '$value'")
                 return value
             }
+            // If value is empty, it means the field value is on next line (JSON or multiline)
+            // Fall through to JSON extraction
         }
 
         // Try to match multi-line JSON: field: { ... } or field:\n  { ... }
         // Use brace counting to correctly extract nested JSON
-        val fieldPattern = "$field:\\s*"
-        val fieldStart = yaml.indexOf(fieldPattern)
-        if (fieldStart == -1) {
+        val fieldRegex = Regex("$field:\\s*")
+        val fieldMatch = fieldRegex.find(yaml)
+        if (fieldMatch == null) {
+            Log.w(TAG, "extractYamlField('$field'): field pattern not found in JSON extraction")
             return ""
         }
 
-        val jsonStart = yaml.indexOf('{', fieldStart + fieldPattern.length)
+        val jsonStart = yaml.indexOf('{', fieldMatch.range.last)
         if (jsonStart == -1) {
+            Log.w(TAG, "extractYamlField('$field'): JSON start '{' not found after field")
             return ""
         }
+
+        Log.d(TAG, "extractYamlField('$field'): found JSON start at position $jsonStart")
 
         // Start from {, count braces until matched
         var braceCount = 0
@@ -136,13 +144,16 @@ object SkillParser {
                         // Found matching closing brace
                         val jsonStr = yaml.substring(jsonStart, jsonEnd + 1)
                         // Remove newlines and extra spaces from JSON, keep compact format
-                        return jsonStr.replace(Regex("\\s+"), " ").trim()
+                        val compactJson = jsonStr.replace(Regex("\\s+"), " ").trim()
+                        Log.d(TAG, "extractYamlField('$field'): extracted JSON (length=${compactJson.length})")
+                        return compactJson
                     }
                 }
             }
             jsonEnd++
         }
 
+        Log.w(TAG, "extractYamlField('$field'): failed to find closing brace")
         return ""
     }
 

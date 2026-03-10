@@ -1,7 +1,7 @@
 # 📱 AndroidForClaw — OpenClaw for Android, Now Available
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/Release-v2.4.4-blue.svg)](https://github.com/xiaomochn/AndroidForClaw/releases/tag/v2.4.4)
+[![Release](https://img.shields.io/badge/Release-v2.5.0-blue.svg)](https://github.com/xiaomochn/AndroidForClaw/releases/tag/v2.5.0)
 [![Android](https://img.shields.io/badge/Platform-Android%208.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9%2B-blue.svg)](https://kotlinlang.org/)
 
@@ -157,7 +157,7 @@ curl -X POST http://phone-ip:8080/gateway \
 
 ### Method 1: Download Pre-built APK (Recommended)
 
-**📥 Latest Release**: [v2.4.4](https://github.com/xiaomochn/AndroidForClaw/releases/tag/v2.4.4) | **📦 Browse Files**: [releases/](https://github.com/xiaomochn/AndroidForClaw/tree/main/releases)
+**📥 Latest Release**: [v2.5.0](https://github.com/xiaomochn/AndroidForClaw/releases/tag/v2.5.0) | **📦 Browse Files**: [releases/](https://github.com/xiaomochn/AndroidForClaw/tree/main/releases)
 
 1. **Download APK**
    ```
