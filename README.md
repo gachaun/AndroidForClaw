@@ -5,7 +5,7 @@
 [![Android](https://img.shields.io/badge/Platform-Android%208.0%2B-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9%2B-blue.svg)](https://kotlinlang.org/)
 
-**[English](README_EN.md)** | **[📖 文档](docs/README.md)** | **[🚀 快速开始](#-快速开始)** | **[🤝 参与贡献](CONTRIBUTING.md)**
+**[English](README_EN.md)** | **[📖 飞书文档](https://vcn23e479dhx.feishu.cn/wiki/UZtFwM6t9iArPVkMvRccwSran6d)** | **[📖 文档](docs/README.md)** | **[🚀 快速开始](#-快速开始)** | **[🤝 参与贡献](CONTRIBUTING.md)**
 
 ---
 
