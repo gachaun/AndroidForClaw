@@ -303,7 +303,7 @@ class ModelSetupActivity : AppCompatActivity() {
         val api: String,
         val hint: String,
         val models: List<ModelPreset>,
-        val authHeader: Boolean = false
+        val authHeader: Boolean = true  // Default true: most providers use Authorization: Bearer header
     )
 
     private data class ModelPreset(
