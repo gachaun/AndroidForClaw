@@ -55,13 +55,15 @@ class ModelSetupActivity : AppCompatActivity() {
                 name = "OpenRouter",
                 baseUrl = "https://openrouter.ai/api/v1",
                 api = "openai-completions",
-                hint = "OpenRouter 聚合了 Claude、GPT、Gemini 等多个模型，一个 Key 即可使用全部。",
+                hint = "OpenRouter 聚合了 Claude、GPT、Gemini 等多个模型，一个 Key 即可使用全部。\n注册即可免费使用，无需充值！",
                 models = listOf(
-                    ModelPreset("anthropic/claude-sonnet-4", "Claude Sonnet 4 (推荐)"),
-                    ModelPreset("anthropic/claude-opus-4", "Claude Opus 4"),
-                    ModelPreset("openai/gpt-4.1", "GPT-4.1"),
-                    ModelPreset("google/gemini-2.5-pro", "Gemini 2.5 Pro"),
-                    ModelPreset("deepseek/deepseek-r1", "DeepSeek R1")
+                    ModelPreset("openrouter/free", "🆓 免费自动路由 (默认，无需充值)"),
+                    ModelPreset("qwen/qwen3-coder:free", "🆓 Qwen3 Coder (免费，262K)"),
+                    ModelPreset("deepseek/deepseek-r1:free", "🆓 DeepSeek R1 (免费，推理)"),
+                    ModelPreset("anthropic/claude-sonnet-4", "Claude Sonnet 4 (付费，推荐)"),
+                    ModelPreset("anthropic/claude-opus-4", "Claude Opus 4 (付费)"),
+                    ModelPreset("openai/gpt-4.1", "GPT-4.1 (付费)"),
+                    ModelPreset("google/gemini-2.5-pro", "Gemini 2.5 Pro (付费)")
                 ),
                 authHeader = true
             ),
