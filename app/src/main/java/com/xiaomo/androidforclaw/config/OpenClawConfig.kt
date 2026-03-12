@@ -1,97 +1,57 @@
 package com.xiaomo.androidforclaw.config
 
 /**
- * OpenClaw Main Configuration (openclaw.json)
+ * OpenClaw Config — 对齐 OpenClaw types.openclaw.d.ts
  *
- * 用户只需写想覆盖的字段，其余全用默认值。
- * 解析由 ConfigLoader 的 JSONObject 处理，不依赖 Gson 注解。
+ * 用户只写想覆盖的字段，其余全用默认值。
+ * 解析由 ConfigLoader 的 JSONObject 处理。
  */
 
 data class OpenClawConfig(
+    // ======= OpenClaw 标准段 =======
     val thinking: ThinkingConfig = ThinkingConfig(),
-    val agent: AgentConfig = AgentConfig(),
-    val agents: AgentsConfig? = null,
     val models: ModelsConfig? = null,
+    val agents: AgentsConfig? = null,
+    val channels: ChannelsConfig = ChannelsConfig(),
+    val gateway: GatewayConfig = GatewayConfig(),
     val skills: SkillsConfig = SkillsConfig(),
     val plugins: PluginsConfig = PluginsConfig(),
     val tools: ToolsConfig = ToolsConfig(),
-    val gateway: GatewayConfig = GatewayConfig(),
-    val ui: UIConfig = UIConfig(),
-    val logging: LoggingConfig = LoggingConfig(),
     val memory: MemoryConfig = MemoryConfig(),
+    val messages: MessagesConfig = MessagesConfig(),
     val session: SessionConfig = SessionConfig(),
+    val logging: LoggingConfig = LoggingConfig(),
+    val ui: UIConfig = UIConfig(),
+
+    // ======= Android 扩展 =======
+    val agent: AgentConfig = AgentConfig(),
+
+    // ======= Legacy =======
     val providers: Map<String, ProviderConfig> = emptyMap()
 ) {
+    /** 解析 providers：优先 models.providers，fallback 到顶层 providers */
     fun resolveProviders(): Map<String, ProviderConfig> {
         return models?.providers ?: providers
     }
 
+    /** 解析默认模型 */
     fun resolveDefaultModel(): String {
         return agents?.defaults?.model?.primary ?: agent.defaultModel
     }
+
+    /** 兼容旧代码：gateway.feishu → channels.feishu */
+    val feishuConfig: FeishuChannelConfig get() = channels.feishu
 }
 
-data class ThinkingConfig(
-    val enabled: Boolean = true,
-    val budgetTokens: Int = 10000
-)
+// ============ channels（对齐 types.channels.d.ts）============
 
-data class AgentConfig(
-    val maxIterations: Int = 20,
-    val defaultModel: String = "openrouter/hunter-alpha",
-    val timeout: Long = 300000,
-    val retryOnError: Boolean = true,
-    val maxRetries: Int = 3,
-    val mode: String = "exploration"
-)
-
-data class SkillsConfig(
-    val allowBundled: List<String>? = null,
-    val extraDirs: List<String> = emptyList(),
-    val watch: Boolean = true,
-    val watchDebounceMs: Long = 250,
-    val entries: Map<String, SkillConfig> = emptyMap()
-)
-
-data class SkillConfig(
-    val enabled: Boolean = true,
-    val apiKey: Any? = null,
-    val env: Map<String, String>? = null,
-    val config: Map<String, Any>? = null
-) {
-    fun resolveApiKey(): String? {
-        return when (apiKey) {
-            is String -> apiKey
-            is Map<*, *> -> {
-                val source = apiKey["source"] as? String
-                val id = apiKey["id"] as? String
-                if (source == "env" && id != null) System.getenv(id) else null
-            }
-            else -> null
-        }
-    }
-}
-
-data class ToolsConfig(
-    val screenshot: ScreenshotToolConfig = ScreenshotToolConfig()
-)
-
-data class ScreenshotToolConfig(
-    val enabled: Boolean = true,
-    val quality: Int = 85,
-    val maxWidth: Int = 1080,
-    val format: String = "jpeg"
-)
-
-data class GatewayConfig(
-    val enabled: Boolean = true,
-    val port: Int = 8080,
-    val host: String = "0.0.0.0",
+data class ChannelsConfig(
     val feishu: FeishuChannelConfig = FeishuChannelConfig(),
     val discord: DiscordChannelConfig? = null
 )
 
 data class FeishuChannelConfig(
+    // 基础
     val enabled: Boolean = false,
     val appId: String = "",
     val appSecret: String = "",
@@ -99,37 +59,67 @@ data class FeishuChannelConfig(
     val verificationToken: String? = null,
     val domain: String = "feishu",
     val connectionMode: String = "websocket",
-    val webhookPath: String = "/feishu/webhook",
-    val webhookPort: Int = 8765,
-    val dmPolicy: String = "open",
-    val allowFrom: List<String> = listOf("*"),
-    val groupPolicy: String = "open",
+    val webhookPath: String = "/feishu/events",
+    val webhookHost: String? = null,
+    val webhookPort: Int? = null,
+    // 策略
+    val dmPolicy: String = "pairing",
+    val allowFrom: List<String> = emptyList(),
+    val groupPolicy: String = "allowlist",
     val groupAllowFrom: List<String> = emptyList(),
-    val requireMention: Boolean = false,
-    val groupCommandMentionBypass: String = "never",
-    val allowMentionlessInMultiBotGroup: Boolean = false,
+    val requireMention: Boolean = true,
+    val groupSessionScope: String? = null,
     val topicSessionMode: String = "disabled",
+    val replyInThread: String = "disabled",
+    // 历史
     val historyLimit: Int = 20,
     val dmHistoryLimit: Int = 100,
+    // 消息
     val textChunkLimit: Int = 4000,
     val chunkMode: String = "length",
+    val renderMode: String = "auto",
+    val streaming: Boolean? = null,
+    // 媒体
     val mediaMaxMb: Double = 20.0,
-    val audioMaxDurationSec: Int = 300,
-    val enableDocTools: Boolean = true,
-    val enableWikiTools: Boolean = true,
-    val enableDriveTools: Boolean = true,
-    val enableBitableTools: Boolean = true,
-    val enableTaskTools: Boolean = true,
-    val enableChatTools: Boolean = true,
-    val enablePermTools: Boolean = true,
-    val enableUrgentTools: Boolean = true,
+    // 工具
+    val tools: FeishuToolsConfig = FeishuToolsConfig(),
+    // 队列（Android 扩展）
     val queueMode: String? = "followup",
     val queueCap: Int = 10,
     val queueDropPolicy: String = "old",
     val queueDebounceMs: Int = 100,
+    // UX
     val typingIndicator: Boolean = true,
+    val resolveSenderNames: Boolean = true,
+    val reactionNotifications: String = "own",
     val reactionDedup: Boolean = true,
-    val debugMode: Boolean = false
+    // 调试
+    val debugMode: Boolean = false,
+    // 多账号
+    val accounts: Map<String, FeishuAccountConfig>? = null,
+    val defaultAccount: String? = null
+)
+
+data class FeishuToolsConfig(
+    val doc: Boolean = true,
+    val chat: Boolean = true,
+    val wiki: Boolean = true,
+    val drive: Boolean = true,
+    val perm: Boolean = false,
+    val scopes: Boolean = true,
+    val bitable: Boolean = true,
+    val task: Boolean = true,
+    val urgent: Boolean = true
+)
+
+data class FeishuAccountConfig(
+    val enabled: Boolean = true,
+    val name: String? = null,
+    val appId: String? = null,
+    val appSecret: String? = null,
+    val domain: String? = null,
+    val connectionMode: String? = null,
+    val webhookPath: String? = null
 )
 
 data class DiscordChannelConfig(
@@ -162,24 +152,21 @@ data class DiscordAccountPolicyConfig(
     val guilds: Map<String, GuildPolicyConfig>? = null
 )
 
-data class UIConfig(
-    val theme: String = "auto",
-    val language: String = "zh"
+// ============ gateway（对齐 types.gateway.d.ts）============
+
+data class GatewayConfig(
+    val port: Int = 18789,
+    val mode: String = "local",
+    val bind: String = "loopback",
+    val auth: GatewayAuthConfig? = null
 )
 
-data class LoggingConfig(
-    val level: String = "INFO",
-    val logToFile: Boolean = true
+data class GatewayAuthConfig(
+    val mode: String = "token",
+    val token: String? = null
 )
 
-data class MemoryConfig(
-    val enabled: Boolean = true,
-    val path: String = "/sdcard/.androidforclaw/workspace/memory"
-)
-
-data class SessionConfig(
-    val maxMessages: Int = 100
-)
+// ============ agents（对齐 types.agents.d.ts）============
 
 data class AgentsConfig(
     val defaults: AgentDefaultsConfig = AgentDefaultsConfig()
@@ -188,13 +175,56 @@ data class AgentsConfig(
 data class AgentDefaultsConfig(
     val model: ModelSelectionConfig? = null,
     val bootstrapMaxChars: Int = 20_000,
-    val bootstrapTotalMaxChars: Int = 150_000
+    val bootstrapTotalMaxChars: Int = 150_000,
+    val maxConcurrent: Int = 5
 )
 
 data class ModelSelectionConfig(
     val primary: String? = null,
     val fallbacks: List<String>? = null
 )
+
+// ============ agent（Android 扩展，非 OpenClaw 标准）============
+
+data class AgentConfig(
+    val maxIterations: Int = 20,
+    val defaultModel: String = "openrouter/hunter-alpha",
+    val timeout: Long = 300000,
+    val retryOnError: Boolean = true,
+    val maxRetries: Int = 3,
+    val mode: String = "exploration"
+)
+
+// ============ skills（对齐 types.skills.d.ts）============
+
+data class SkillsConfig(
+    val allowBundled: List<String>? = null,
+    val extraDirs: List<String> = emptyList(),
+    val watch: Boolean = true,
+    val watchDebounceMs: Long = 250,
+    val entries: Map<String, SkillConfig> = emptyMap()
+)
+
+data class SkillConfig(
+    val enabled: Boolean = true,
+    val apiKey: Any? = null,
+    val env: Map<String, String>? = null,
+    val config: Map<String, Any>? = null
+) {
+    fun resolveApiKey(): String? {
+        return when (apiKey) {
+            is String -> apiKey
+            is Map<*, *> -> {
+                val source = apiKey["source"] as? String
+                val id = apiKey["id"] as? String
+                if (source == "env" && id != null) System.getenv(id) else null
+            }
+            else -> null
+        }
+    }
+}
+
+// ============ plugins（对齐 types.plugins.d.ts）============
 
 data class PluginsConfig(
     val entries: Map<String, PluginEntry> = emptyMap()
@@ -205,29 +235,61 @@ data class PluginEntry(
     val skills: List<String> = emptyList()
 )
 
-/**
- * 配置常量
- */
+// ============ tools（对齐 types.tools.d.ts）============
+
+data class ToolsConfig(
+    val screenshot: ScreenshotToolConfig = ScreenshotToolConfig()
+)
+
+data class ScreenshotToolConfig(
+    val enabled: Boolean = true,
+    val quality: Int = 85,
+    val maxWidth: Int = 1080,
+    val format: String = "jpeg"
+)
+
+// ============ messages ============
+
+data class MessagesConfig(
+    val ackReactionScope: String = "own"
+)
+
+// ============ memory（对齐 types.memory.d.ts）============
+
+data class MemoryConfig(
+    val enabled: Boolean = true,
+    val path: String = "/sdcard/.androidforclaw/workspace/memory"
+)
+
+// ============ session / logging / ui ============
+
+data class SessionConfig(
+    val maxMessages: Int = 100
+)
+
+data class LoggingConfig(
+    val level: String = "INFO",
+    val logToFile: Boolean = true
+)
+
+data class UIConfig(
+    val theme: String = "auto",
+    val language: String = "zh"
+)
+
+// ============ thinking ============
+
+data class ThinkingConfig(
+    val enabled: Boolean = true,
+    val budgetTokens: Int = 10000
+)
+
+// ============ 配置常量 ============
+
 object ConfigDefaults {
-    const val DEFAULT_THINKING_BUDGET = 10000
-    const val MIN_THINKING_BUDGET = 1000
-    const val MAX_THINKING_BUDGET = 50000
     const val DEFAULT_MAX_ITERATIONS = 20
-    const val MIN_MAX_ITERATIONS = 1
-    const val MAX_MAX_ITERATIONS = 100
     const val DEFAULT_TIMEOUT_MS = 300000L
-    const val MIN_TIMEOUT_MS = 10000L
-    const val MAX_TIMEOUT_MS = 3600000L
     const val DEFAULT_SCREENSHOT_QUALITY = 85
-    const val MIN_SCREENSHOT_QUALITY = 10
-    const val MAX_SCREENSHOT_QUALITY = 100
     const val DEFAULT_SCREENSHOT_MAX_WIDTH = 1080
-    const val DEFAULT_GESTURE_DURATION = 100L
-    const val MIN_GESTURE_DURATION = 50L
-    const val MAX_GESTURE_DURATION = 5000L
-    const val DEFAULT_GATEWAY_PORT = 8080
-    const val MIN_GATEWAY_PORT = 1024
-    const val MAX_GATEWAY_PORT = 65535
-    const val DEFAULT_LOG_MAX_FILE_SIZE = 10 * 1024 * 1024L
-    const val DEFAULT_LOG_MAX_FILES = 5
+    const val DEFAULT_GATEWAY_PORT = 18789
 }

@@ -94,12 +94,17 @@ class ConfigLoader(private val context: Context) {
         val agentsJson = root.optJSONObject("agents")
         val agents = agentsJson?.let { parseAgentsConfig(it) }
 
-        // Agent (legacy)
+        // Agent (Android extension, legacy)
         val agentJson = root.optJSONObject("agent")
         val agent = agentJson?.let { parseAgentConfig(it) } ?: AgentConfig()
 
-        // Gateway
+        // Channels（对齐 OpenClaw: channels.feishu / channels.discord）
+        val channelsJson = root.optJSONObject("channels")
+        // 兼容旧格式：如果 channels 没有 feishu，fallback 到 gateway.feishu
         val gatewayJson = root.optJSONObject("gateway")
+        val channels = parseChannelsConfig(channelsJson, gatewayJson)
+
+        // Gateway（对齐 OpenClaw: 只有 port/mode/bind/auth）
         val gateway = gatewayJson?.let { parseGatewayConfig(it) } ?: GatewayConfig()
 
         // Skills
@@ -114,10 +119,6 @@ class ConfigLoader(private val context: Context) {
         val toolsJson = root.optJSONObject("tools")
         val tools = toolsJson?.let { parseToolsConfig(it) } ?: ToolsConfig()
 
-        // Thinking
-        val thinkingJson = root.optJSONObject("thinking")
-        val thinking = thinkingJson?.let { parseThinkingConfig(it) } ?: ThinkingConfig()
-
         // UI
         val uiJson = root.optJSONObject("ui")
         val ui = uiJson?.let { parseUIConfig(it) } ?: UIConfig()
@@ -130,6 +131,12 @@ class ConfigLoader(private val context: Context) {
         val memoryJson = root.optJSONObject("memory")
         val memory = memoryJson?.let { parseMemoryConfig(it) } ?: MemoryConfig()
 
+        // Messages
+        val messagesJson = root.optJSONObject("messages")
+        val messages = messagesJson?.let {
+            MessagesConfig(ackReactionScope = it.optString("ackReactionScope", "own"))
+        } ?: MessagesConfig()
+
         // Session
         val sessionJson = root.optJSONObject("session")
         val session = sessionJson?.let { parseSessionConfig(it) } ?: SessionConfig()
@@ -138,18 +145,19 @@ class ConfigLoader(private val context: Context) {
         val legacyProviders = root.optJSONObject("providers")?.let { parseProvidersMap(it) } ?: emptyMap()
 
         return OpenClawConfig(
-            thinking = thinking,
-            agent = agent,
-            agents = agents,
             models = models,
+            agents = agents,
+            channels = channels,
+            gateway = gateway,
             skills = skills,
             plugins = plugins,
             tools = tools,
-            gateway = gateway,
-            ui = ui,
-            logging = logging,
             memory = memory,
+            messages = messages,
             session = session,
+            logging = logging,
+            ui = ui,
+            agent = agent,
             providers = legacyProviders
         )
     }
@@ -275,23 +283,79 @@ class ConfigLoader(private val context: Context) {
         )
     }
 
-    private fun parseGatewayConfig(json: JSONObject): GatewayConfig {
-        val feishuJson = json.optJSONObject("feishu")
+    /**
+     * 解析 channels 配置（对齐 OpenClaw: channels.feishu）
+     * 兼容旧格式：如果 channels.feishu 不存在，fallback 到 gateway.feishu
+     */
+    private fun parseChannelsConfig(channelsJson: JSONObject?, gatewayJson: JSONObject?): ChannelsConfig {
+        val feishuJson = channelsJson?.optJSONObject("feishu")
+            ?: gatewayJson?.optJSONObject("feishu")  // legacy fallback
         val feishu = feishuJson?.let { parseFeishuConfig(it) } ?: FeishuChannelConfig()
 
-        val discordJson = json.optJSONObject("discord")
+        val discordJson = channelsJson?.optJSONObject("discord")
+            ?: gatewayJson?.optJSONObject("discord")  // legacy fallback
         val discord = discordJson?.let { parseDiscordConfig(it) }
 
+        return ChannelsConfig(feishu = feishu, discord = discord)
+    }
+
+    /**
+     * 解析 gateway（对齐 OpenClaw: 只有 port/mode/bind/auth）
+     */
+    private fun parseGatewayConfig(json: JSONObject): GatewayConfig {
+        val authJson = json.optJSONObject("auth")
+        val auth = authJson?.let {
+            GatewayAuthConfig(
+                mode = it.optString("mode", "token"),
+                token = if (it.has("token")) it.optString("token") else null
+            )
+        }
+
         return GatewayConfig(
-            enabled = json.optBoolean("enabled", true),
-            port = json.optInt("port", 8080),
-            host = json.optString("host", "0.0.0.0"),
-            feishu = feishu,
-            discord = discord
+            port = json.optInt("port", 18789),
+            mode = json.optString("mode", "local"),
+            bind = json.optString("bind", "loopback"),
+            auth = auth
         )
     }
 
     private fun parseFeishuConfig(json: JSONObject): FeishuChannelConfig {
+        // tools 子配置（对齐 OpenClaw FeishuToolsConfigSchema）
+        val toolsJson = json.optJSONObject("tools")
+        val tools = toolsJson?.let {
+            FeishuToolsConfig(
+                doc = it.optBoolean("doc", true),
+                chat = it.optBoolean("chat", true),
+                wiki = it.optBoolean("wiki", true),
+                drive = it.optBoolean("drive", true),
+                perm = it.optBoolean("perm", false),
+                scopes = it.optBoolean("scopes", true),
+                bitable = it.optBoolean("bitable", true),
+                task = it.optBoolean("task", true),
+                urgent = it.optBoolean("urgent", true)
+            )
+        } ?: FeishuToolsConfig()
+
+        // 多账号
+        val accountsJson = json.optJSONObject("accounts")
+        val accounts = accountsJson?.let { a ->
+            val map = mutableMapOf<String, FeishuAccountConfig>()
+            a.keys().forEach { key ->
+                a.optJSONObject(key)?.let { aj ->
+                    map[key] = FeishuAccountConfig(
+                        enabled = aj.optBoolean("enabled", true),
+                        name = if (aj.has("name")) aj.optString("name") else null,
+                        appId = if (aj.has("appId")) aj.optString("appId") else null,
+                        appSecret = if (aj.has("appSecret")) aj.optString("appSecret") else null,
+                        domain = if (aj.has("domain")) aj.optString("domain") else null,
+                        connectionMode = if (aj.has("connectionMode")) aj.optString("connectionMode") else null,
+                        webhookPath = if (aj.has("webhookPath")) aj.optString("webhookPath") else null
+                    )
+                }
+            }
+            map
+        }
+
         return FeishuChannelConfig(
             enabled = json.optBoolean("enabled", false),
             appId = json.optString("appId", ""),
@@ -300,41 +364,40 @@ class ConfigLoader(private val context: Context) {
             verificationToken = if (json.has("verificationToken")) json.optString("verificationToken") else null,
             domain = json.optString("domain", "feishu"),
             connectionMode = json.optString("connectionMode", "websocket"),
-            webhookPath = json.optString("webhookPath", "/feishu/webhook"),
-            webhookPort = json.optInt("webhookPort", 8765),
-            dmPolicy = json.optString("dmPolicy", "open"),
+            webhookPath = json.optString("webhookPath", "/feishu/events"),
+            webhookHost = if (json.has("webhookHost")) json.optString("webhookHost") else null,
+            webhookPort = if (json.has("webhookPort")) json.optInt("webhookPort") else null,
+            dmPolicy = json.optString("dmPolicy", "pairing"),
             allowFrom = json.optJSONArray("allowFrom")?.let { arr ->
                 (0 until arr.length()).map { arr.getString(it) }
-            } ?: listOf("*"),
-            groupPolicy = json.optString("groupPolicy", "open"),
+            } ?: emptyList(),
+            groupPolicy = json.optString("groupPolicy", "allowlist"),
             groupAllowFrom = json.optJSONArray("groupAllowFrom")?.let { arr ->
                 (0 until arr.length()).map { arr.getString(it) }
             } ?: emptyList(),
-            requireMention = json.optBoolean("requireMention", false),
-            groupCommandMentionBypass = json.optString("groupCommandMentionBypass", "never"),
-            allowMentionlessInMultiBotGroup = json.optBoolean("allowMentionlessInMultiBotGroup", false),
+            requireMention = json.optBoolean("requireMention", true),
+            groupSessionScope = if (json.has("groupSessionScope")) json.optString("groupSessionScope") else null,
             topicSessionMode = json.optString("topicSessionMode", "disabled"),
+            replyInThread = json.optString("replyInThread", "disabled"),
             historyLimit = json.optInt("historyLimit", 20),
             dmHistoryLimit = json.optInt("dmHistoryLimit", 100),
             textChunkLimit = json.optInt("textChunkLimit", 4000),
             chunkMode = json.optString("chunkMode", "length"),
+            renderMode = json.optString("renderMode", "auto"),
+            streaming = if (json.has("streaming")) json.optBoolean("streaming") else null,
             mediaMaxMb = json.optDouble("mediaMaxMb", 20.0),
-            audioMaxDurationSec = json.optInt("audioMaxDurationSec", 300),
-            enableDocTools = json.optBoolean("enableDocTools", true),
-            enableWikiTools = json.optBoolean("enableWikiTools", true),
-            enableDriveTools = json.optBoolean("enableDriveTools", true),
-            enableBitableTools = json.optBoolean("enableBitableTools", true),
-            enableTaskTools = json.optBoolean("enableTaskTools", true),
-            enableChatTools = json.optBoolean("enableChatTools", true),
-            enablePermTools = json.optBoolean("enablePermTools", true),
-            enableUrgentTools = json.optBoolean("enableUrgentTools", true),
+            tools = tools,
             queueMode = if (json.has("queueMode")) json.optString("queueMode") else "followup",
             queueCap = json.optInt("queueCap", 10),
             queueDropPolicy = json.optString("queueDropPolicy", "old"),
             queueDebounceMs = json.optInt("queueDebounceMs", 100),
             typingIndicator = json.optBoolean("typingIndicator", true),
+            resolveSenderNames = json.optBoolean("resolveSenderNames", true),
+            reactionNotifications = json.optString("reactionNotifications", "own"),
             reactionDedup = json.optBoolean("reactionDedup", true),
-            debugMode = json.optBoolean("debugMode", false)
+            debugMode = json.optBoolean("debugMode", false),
+            accounts = accounts,
+            defaultAccount = if (json.has("defaultAccount")) json.optString("defaultAccount") else null
         )
     }
 
@@ -601,24 +664,30 @@ class ConfigLoader(private val context: Context) {
             root.put("agents", agentsObj)
         }
 
-        // Agent (legacy)
+        // Agent (Android extension)
         val agentObj = root.optJSONObject("agent") ?: JSONObject()
         agentObj.put("defaultModel", config.agent.defaultModel)
         agentObj.put("maxIterations", config.agent.maxIterations)
         root.put("agent", agentObj)
 
-        // Gateway (feishu)
-        val gwObj = root.optJSONObject("gateway") ?: JSONObject()
+        // Channels (对齐 OpenClaw: channels.feishu)
+        val channelsObj = root.optJSONObject("channels") ?: JSONObject()
+        val feishu = config.channels.feishu
         val feishuObj = JSONObject()
-        feishuObj.put("enabled", config.gateway.feishu.enabled)
-        feishuObj.put("appId", config.gateway.feishu.appId)
-        feishuObj.put("appSecret", config.gateway.feishu.appSecret)
-        feishuObj.put("connectionMode", config.gateway.feishu.connectionMode)
-        feishuObj.put("dmPolicy", config.gateway.feishu.dmPolicy)
-        feishuObj.put("groupPolicy", config.gateway.feishu.groupPolicy)
-        feishuObj.put("requireMention", config.gateway.feishu.requireMention)
-        gwObj.put("feishu", feishuObj)
-        gwObj.put("enabled", config.gateway.enabled)
+        feishuObj.put("enabled", feishu.enabled)
+        feishuObj.put("appId", feishu.appId)
+        feishuObj.put("appSecret", feishu.appSecret)
+        feishuObj.put("domain", feishu.domain)
+        feishuObj.put("connectionMode", feishu.connectionMode)
+        feishuObj.put("dmPolicy", feishu.dmPolicy)
+        feishuObj.put("groupPolicy", feishu.groupPolicy)
+        feishuObj.put("requireMention", feishu.requireMention)
+        channelsObj.put("feishu", feishuObj)
+        root.put("channels", channelsObj)
+
+        // Gateway (对齐 OpenClaw: 只有 port/mode/bind/auth)
+        val gwObj = root.optJSONObject("gateway") ?: JSONObject()
+        gwObj.put("port", config.gateway.port)
         root.put("gateway", gwObj)
     }
 
@@ -660,7 +729,7 @@ class ConfigLoader(private val context: Context) {
     fun isHotReloadEnabled(): Boolean = hotReloadEnabled
 
     fun getFeishuConfig(): com.xiaomo.feishu.FeishuConfig {
-        return FeishuConfigAdapter.toFeishuConfig(loadOpenClawConfig().gateway.feishu)
+        return FeishuConfigAdapter.toFeishuConfig(loadOpenClawConfig().channels.feishu)
     }
 
     // ============ Private Helpers ============
@@ -701,7 +770,7 @@ class ConfigLoader(private val context: Context) {
      */
     private fun validateConfig(config: OpenClawConfig) {
         // Validate feishu if enabled
-        val feishu = config.gateway.feishu
+        val feishu = config.channels.feishu
         if (feishu.enabled) {
             require(feishu.appId.isNotBlank() && !feishu.appId.startsWith("\${")) {
                 "Feishu 已启用但 appId 未配置"

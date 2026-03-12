@@ -51,7 +51,7 @@ fun FeishuChannelScreen(onBack: () -> Unit, context: android.content.Context = a
 
     // 加载配置
     val openClawConfig = remember { configLoader.loadOpenClawConfig() }
-    val savedConfig = remember { openClawConfig.gateway.feishu }
+    val savedConfig = remember { openClawConfig.channels.feishu }
 
     // 状态变量（对齐 clawdbot-feishu 配置）
     var enabled by remember { mutableStateOf(savedConfig.enabled) }
@@ -84,7 +84,7 @@ fun FeishuChannelScreen(onBack: () -> Unit, context: android.content.Context = a
                                 val currentConfig = configLoader.loadOpenClawConfig()
 
                                 // 更新 feishu 配置
-                                val updatedFeishuConfig = currentConfig.gateway.feishu.copy(
+                                val updatedFeishuConfig = currentConfig.channels.feishu.copy(
                                     enabled = enabled,
                                     appId = appId,
                                     appSecret = appSecret,
@@ -98,11 +98,11 @@ fun FeishuChannelScreen(onBack: () -> Unit, context: android.content.Context = a
                                 )
 
                                 // 更新完整配置
-                                val updatedGatewayConfig = currentConfig.gateway.copy(
+                                val updatedChannelsConfig = currentConfig.channels.copy(
                                     feishu = updatedFeishuConfig
                                 )
                                 val updatedConfig = currentConfig.copy(
-                                    gateway = updatedGatewayConfig
+                                    channels = updatedChannelsConfig
                                 )
 
                                 // 保存到 openclaw.json

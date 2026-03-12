@@ -266,13 +266,13 @@ class SkillStatusBuilder(private val context: Context) {
     private fun getConfigValue(path: String, config: com.xiaomo.androidforclaw.config.OpenClawConfig): Any? {
         val parts = path.split(".")
         return when {
-            parts.size >= 2 && parts[0] == "gateway" -> {
+            parts.size >= 2 && parts[0] in listOf("gateway", "channels") -> {
                 when (parts.getOrNull(1)) {
-                    "enabled" -> config.gateway.enabled
+                    "enabled" -> true
                     "feishu" -> when (parts.getOrNull(2)) {
-                        "appId" -> config.gateway.feishu.appId.takeIf { it.isNotEmpty() }
-                        "appSecret" -> config.gateway.feishu.appSecret.takeIf { it.isNotEmpty() }
-                        "enabled" -> config.gateway.feishu.enabled
+                        "appId" -> config.channels.feishu.appId.takeIf { it.isNotEmpty() }
+                        "appSecret" -> config.channels.feishu.appSecret.takeIf { it.isNotEmpty() }
+                        "enabled" -> config.channels.feishu.enabled
                         else -> null
                     }
                     else -> null

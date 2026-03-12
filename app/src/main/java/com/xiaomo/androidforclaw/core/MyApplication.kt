@@ -662,12 +662,12 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
 
                 val configLoader = ConfigLoader(this@MyApplication)
                 val openClawConfig = configLoader.loadOpenClawConfig()
-                val feishuConfig = openClawConfig.gateway.feishu
+                val feishuConfig = openClawConfig.channels.feishu
 
                 if (!feishuConfig.enabled) {
                     Log.i(TAG, "⏭️  Feishu Channel 未启用，跳过初始化")
                     Log.i(TAG, "   配置路径: /sdcard/.androidforclaw/openclaw.json")
-                    Log.i(TAG, "   设置 gateway.feishu.enabled = true 以启用")
+                    Log.i(TAG, "   设置 channels.feishu.enabled = true 以启用")
                     Log.i(TAG, "========================================")
                     return@launch
                 }
@@ -817,14 +817,14 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
             val openClawConfig = configLoader.loadOpenClawConfig()
 
             // Read Feishu queue config
-            val queueMode = openClawConfig.gateway.feishu.queueMode ?: "followup"
+            val queueMode = openClawConfig.channels.feishu.queueMode ?: "followup"
 
             // Set both queue capacity and drop policy
             val queueKey = "feishu:$chatId"
             messageQueueManager.setQueueSettings(
                 key = queueKey,
-                cap = openClawConfig.gateway.feishu.queueCap,
-                dropPolicy = when (openClawConfig.gateway.feishu.queueDropPolicy.lowercase()) {
+                cap = openClawConfig.channels.feishu.queueCap,
+                dropPolicy = when (openClawConfig.channels.feishu.queueDropPolicy.lowercase()) {
                     "new" -> MessageQueueManager.DropPolicy.NEW
                     "summarize" -> MessageQueueManager.DropPolicy.SUMMARIZE
                     else -> MessageQueueManager.DropPolicy.OLD
@@ -866,7 +866,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
             // 1. Add "typing" reaction (Typing Indicator)
             val configLoader = ConfigLoader(this@MyApplication)
             val openClawConfig = configLoader.loadOpenClawConfig()
-            val typingIndicatorEnabled = openClawConfig.gateway.feishu.typingIndicator
+            val typingIndicatorEnabled = openClawConfig.channels.feishu.typingIndicator
 
             if (typingIndicatorEnabled) {
                 Log.d(TAG, "⌨️  添加输入中表情...")
@@ -980,7 +980,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
                 try {
                     val configLoader = ConfigLoader(this@MyApplication)
                     val openClawConfig = configLoader.loadOpenClawConfig()
-                    val feishuConfig = openClawConfig.gateway.feishu
+                    val feishuConfig = openClawConfig.channels.feishu
 
                     // Check DM Policy (private chat permission)
                     if (event.chatType == "p2p") {
@@ -1541,12 +1541,12 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
 
                 val configLoader = ConfigLoader(this@MyApplication)
                 val openClawConfig = configLoader.loadOpenClawConfig()
-                val discordConfigData = openClawConfig.gateway.discord
+                val discordConfigData = openClawConfig.channels.discord
 
                 if (discordConfigData == null || !discordConfigData.enabled) {
                     Log.i(TAG, "⏭️  Discord Channel 未启用，跳过初始化")
                     Log.i(TAG, "   配置路径: /sdcard/.androidforclaw/openclaw.json")
-                    Log.i(TAG, "   设置 gateway.discord.enabled = true 以启用")
+                    Log.i(TAG, "   设置 channels.discord.enabled = true 以启用")
                     Log.i(TAG, "========================================")
                     return@launch
                 }
@@ -1554,7 +1554,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
                 val token = discordConfigData.token
                 if (token.isNullOrBlank()) {
                     Log.w(TAG, "⚠️  Discord Bot Token 未配置，跳过启动")
-                    Log.i(TAG, "   请在配置中设置 gateway.discord.token")
+                    Log.i(TAG, "   请在配置中设置 channels.discord.token")
                     Log.i(TAG, "========================================")
                     return@launch
                 }

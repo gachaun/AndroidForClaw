@@ -43,7 +43,7 @@ fun DiscordChannelScreen(
 
     // 加载配置
     val openClawConfig = remember { configLoader.loadOpenClawConfig() }
-    val savedConfig = remember { openClawConfig.gateway.discord }
+    val savedConfig = remember { openClawConfig.channels.discord }
 
     // 状态变量（对齐 Discord 配置）
     var enabled by remember { mutableStateOf(savedConfig?.enabled ?: false) }
@@ -86,11 +86,11 @@ fun DiscordChannelScreen(
                                 )
 
                                 // 更新完整配置
-                                val updatedGatewayConfig = currentConfig.gateway.copy(
+                                val updatedChannelsConfig = currentConfig.channels.copy(
                                     discord = updatedDiscordConfig
                                 )
                                 val updatedConfig = currentConfig.copy(
-                                    gateway = updatedGatewayConfig
+                                    channels = updatedChannelsConfig
                                 )
 
                                 // 保存到 openclaw.json

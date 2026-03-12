@@ -187,7 +187,7 @@ data class SkillRequires(
 
     /**
      * Required config paths (openclaw.json path checks)
-     * e.g.: ["gateway.feishu.appId"]
+     * e.g.: ["channels.feishu.appId"]
      */
     val config: List<String> = emptyList()
 ) {
