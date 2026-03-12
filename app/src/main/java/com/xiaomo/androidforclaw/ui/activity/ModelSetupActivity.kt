@@ -242,17 +242,20 @@ class ModelSetupActivity : AppCompatActivity() {
         val userInputKey = binding.etSetupApiKey.text?.toString()?.trim()
         val selectedModelDisplay = binding.actModel.text?.toString()?.trim()
 
-        // If user provided a key, use it; otherwise keep the built-in default key
+        // If user provided a key, use it; otherwise keep the built-in default key from assets
         val apiKey = if (userInputKey.isNullOrEmpty()) {
-            // Read built-in key from current config (openclaw.json.default.txt has a real key)
+            // Read built-in key from assets/openclaw.json.default.txt
             try {
-                val config = configLoader.loadOpenClawConfig()
-                val existingKey = config.models?.providers?.values?.firstOrNull()?.apiKey
-                if (existingKey.isNullOrEmpty() || existingKey.startsWith("\${")) {
+                val defaultJson = assets.open("openclaw.json.default.txt").bufferedReader().readText()
+                val jsonObj = org.json.JSONObject(defaultJson)
+                val providers = jsonObj.optJSONObject("models")?.optJSONObject("providers")
+                val firstProvider = providers?.keys()?.let { if (it.hasNext()) providers.optJSONObject(it.next()) else null }
+                val builtInKey = firstProvider?.optString("apiKey", "") ?: ""
+                if (builtInKey.isEmpty() || builtInKey.startsWith("\${")) {
                     binding.tilApiKey.error = "请输入 API Key"
                     return
                 }
-                existingKey
+                builtInKey
             } catch (e: Exception) {
                 binding.tilApiKey.error = "请输入 API Key"
                 return
